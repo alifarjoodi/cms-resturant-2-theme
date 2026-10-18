@@ -1,0 +1,323 @@
+/* ============================================================
+   COFFEE SHOP — Menu & Price List
+   Recreated from the reference poster with pure HTML + CSS.
+   Every coffee cup is drawn with CSS (no images needed).
+   ============================================================ */
+
+:root {
+  --cream:        #f7f2e3;
+  --cream-dark:   #ede5d2;
+  --paper-edge:   #e3dac4;
+  --ink:          #2e2118;
+  --brown:        #4a2c17;
+  --brown-deep:   #2b170a;
+  --coffee:       #3a2110;
+  --caramel:      #a9713d;
+  --muted:        #7d7263;
+  --cup-white:    #fdfbf6;
+  --saucer:       #ddd5bf;
+
+  --font-display: "Barlow Condensed", "Arial Narrow", sans-serif;
+  --font-body:    "Inter", "Helvetica Neue", Arial, sans-serif;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  font-family: var(--font-body);
+  background: #d9d0ba;
+  color: var(--ink);
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+}
+
+/* ---------- Poster layout ---------- */
+.poster {
+  width: min(1120px, 100%);
+  min-height: 100vh;
+  background: var(--cream);
+  display: grid;
+  grid-template-columns: 1.85fr 1fr;
+  box-shadow: 0 0 60px rgba(46, 28, 10, .25);
+}
+
+/* ============================================================
+   LEFT — MENU
+   ============================================================ */
+.menu {
+  padding: clamp(28px, 4.5vw, 52px) clamp(24px, 4.5vw, 60px);
+}
+
+.menu h1 {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: clamp(26px, 3.4vw, 40px);
+  letter-spacing: .22em;
+  color: var(--ink);
+  margin-bottom: clamp(26px, 3.5vw, 44px);
+}
+
+.menu-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: clamp(26px, 3.2vw, 42px) clamp(20px, 3vw, 44px);
+}
+
+.item {
+  text-align: center;
+  padding: 6px 8px 2px;
+  border-radius: 14px;
+  transition: transform .35s ease;
+}
+.item:hover { transform: translateY(-5px); }
+
+.item h2 {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: clamp(19px, 1.9vw, 24px);
+  letter-spacing: .06em;
+  margin-top: 12px;
+}
+
+.item p {
+  font-size: 10.5px;
+  line-height: 1.55;
+  color: var(--muted);
+  max-width: 185px;
+  margin: 5px auto 6px;
+}
+
+.price {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 18px;
+  letter-spacing: .08em;
+  color: var(--brown);
+}
+
+/* ============================================================
+   CSS COFFEE CUPS (top view)
+   .cup > .saucer + .mug > .coffee (+ optional art span)
+   ============================================================ */
+.cup {
+  position: relative;
+  width: 112px;
+  height: 112px;
+  margin: 0 auto;
+  transition: transform .35s ease;
+}
+.item:hover .cup { transform: rotate(-4deg) scale(1.05); }
+
+.cup .saucer,
+.hero-cup__saucer {
+  position: absolute; inset: 0;
+  border-radius: 50%;
+  background: radial-gradient(circle, #efe9d8 0 52%, var(--saucer) 72%, #cfc4a8 100%);
+  box-shadow: 0 6px 14px rgba(59, 35, 16, .22), inset 0 0 0 5px rgba(255,255,255,.35);
+}
+
+.cup .mug,
+.hero-cup__mug {
+  position: absolute; inset: 14px;
+  z-index: 1; /* keeps the handle above the saucer, tucked behind the mug */
+  border-radius: 50%;
+  background: var(--cup-white);
+  box-shadow: 0 3px 8px rgba(59, 35, 16, .3), inset 0 -3px 6px rgba(0,0,0,.08);
+}
+/* handle */
+.cup .mug::after,
+.hero-cup__mug::after {
+  content: "";
+  position: absolute;
+  right: -13px; top: 50%;
+  width: 22px; height: 30px;
+  transform: translateY(-50%);
+  border: 7px solid var(--cup-white);
+  border-left: none;
+  border-radius: 0 22px 22px 0;
+  filter: drop-shadow(2px 2px 2px rgba(59,35,16,.25));
+  z-index: -1;
+}
+
+.cup .coffee,
+.hero-cup__coffee {
+  position: absolute; inset: 8px;
+  border-radius: 50%;
+  overflow: hidden;
+  box-shadow: inset 0 3px 8px rgba(0,0,0,.45), inset 0 0 0 3px rgba(169,113,61,.35);
+  background: radial-gradient(circle at 38% 34%, #5a3418, var(--coffee) 58%, var(--brown-deep));
+}
+
+/* --- each drink --- */
+.cup--espresso .coffee {
+  background:
+    radial-gradient(circle at 30% 30%, rgba(214,164,102,.55) 0 4px, transparent 5px),
+    radial-gradient(circle at 66% 58%, rgba(214,164,102,.4) 0 3px, transparent 4px),
+    radial-gradient(circle at 48% 76%, rgba(214,164,102,.35) 0 2px, transparent 3px),
+    radial-gradient(circle at 40% 35%, #6b3d1c, #331b09 62%, #211003);
+}
+.cup--double .coffee {
+  background:
+    radial-gradient(circle at 60% 30%, rgba(214,164,102,.35) 0 3px, transparent 4px),
+    radial-gradient(circle at 42% 38%, #54300f, #241204 60%, #170a02);
+}
+.cup--americano .coffee {
+  background:
+    radial-gradient(circle at 68% 40%, rgba(230,190,140,.28) 0 6px, transparent 8px),
+    radial-gradient(circle at 40% 35%, #4c2a10, #1f0f04 65%, #140801);
+}
+.cup--cappuccino .coffee {
+  background: radial-gradient(circle at 42% 38%, #8a5a30, #5d3a1e 60%, #3c2312);
+}
+.cup--latte .coffee {
+  background: radial-gradient(circle at 45% 40%, #c68b4e, #a9713d 58%, #7d4f27);
+}
+.cup--mocha .coffee {
+  background: radial-gradient(circle at 42% 38%, #7a4a26, #4e2c14 60%, #2e1709);
+}
+.cup--macchiato .coffee { /* caramel cross-hatch drizzle */
+  background:
+    repeating-linear-gradient(45deg,  transparent 0 7px, rgba(240,196,130,.85) 7px 10px),
+    repeating-linear-gradient(-45deg, transparent 0 7px, rgba(240,196,130,.85) 7px 10px),
+    radial-gradient(circle at 45% 40%, #b57e42, #8a5a2b 65%, #5f3a1a);
+}
+.cup--flatwhite .coffee {
+  background:
+    radial-gradient(circle, #f3e3c8 0 24%, rgba(243,227,200,.25) 27%, transparent 34%),
+    radial-gradient(circle at 45% 40%, #c99a5f, #a5713a 62%, #7d4f27);
+}
+
+/* --- foam art --- */
+.foam { /* cappuccino foam blob dusted with cocoa */
+  position: absolute; inset: 16% 14% 14% 18%;
+  border-radius: 48% 52% 55% 45%;
+  background: radial-gradient(circle at 42% 38%, #fffaf0, #f0dfc2 70%, #dfc298);
+  box-shadow: inset 0 0 0 3px rgba(122,74,38,.18);
+}
+.foam::after {
+  content: ""; position: absolute; inset: 28% 24%;
+  border-radius: 50%;
+  background:
+    radial-gradient(circle at 30% 40%, rgba(90,52,24,.75) 0 2px, transparent 3px),
+    radial-gradient(circle at 62% 30%, rgba(90,52,24,.65) 0 2px, transparent 3px),
+    radial-gradient(circle at 50% 66%, rgba(90,52,24,.7) 0 2px, transparent 3px),
+    radial-gradient(circle at 72% 62%, rgba(90,52,24,.55) 0 1.5px, transparent 2.5px);
+}
+
+.heart { /* latte-art heart */
+  position: absolute; left: 50%; top: 52%;
+  width: 22px; height: 22px;
+  background: #f8ecd6;
+  transform: translate(-50%, -50%) rotate(45deg);
+  border-radius: 4px;
+  box-shadow: 0 0 0 4px rgba(248,236,214,.25);
+}
+.heart::before, .heart::after {
+  content: ""; position: absolute;
+  width: 22px; height: 22px; border-radius: 50%; background: #f8ecd6;
+}
+.heart::before { left: -11px; top: 0; }
+.heart::after  { left: 0; top: -11px; }
+
+.swirl { /* mocha cream swirl */
+  position: absolute; inset: 20%;
+  border-radius: 50%;
+  background: conic-gradient(from 20deg, #f4e6cc, #b98b58, #f4e6cc, #8a5a30, #f4e6cc);
+  -webkit-mask: radial-gradient(circle, transparent 0 22%, #000 24% 42%, transparent 44% 52%, #000 54% 72%, transparent 74%);
+          mask: radial-gradient(circle, transparent 0 22%, #000 24% 42%, transparent 44% 52%, #000 54% 72%, transparent 74%);
+  opacity: .9;
+}
+
+/* ============================================================
+   RIGHT — BRAND PANEL
+   ============================================================ */
+.brand {
+  background: var(--cream-dark);
+  border-left: 1px solid var(--paper-edge);
+  padding: clamp(28px, 4vw, 48px) clamp(22px, 3vw, 40px);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.brand__name {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: clamp(38px, 4.2vw, 54px);
+  line-height: .95;
+  letter-spacing: .18em;
+  color: var(--ink);
+}
+.brand__tag {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: clamp(12px, 1.3vw, 16px);
+  letter-spacing: .34em;
+  color: var(--brown);
+  margin-top: 8px;
+}
+
+/* big hero cup */
+.hero-cup {
+  position: relative;
+  width: min(330px, 92%);
+  aspect-ratio: 1;
+  margin: clamp(28px, 4vw, 52px) auto;
+  flex-shrink: 0;
+}
+.hero-cup__saucer {
+  background: radial-gradient(circle, #f2ecdc 0 46%, #ddd2b8 62%, #c9bb9c 78%, #e9e1cd 100%);
+  box-shadow: 0 14px 30px rgba(59,35,16,.25);
+}
+.hero-cup__mug { inset: 13.5%; }
+.hero-cup__mug::after { right: -17%; width: 34%; height: 42%; border-width: clamp(12px, 2.4vw, 22px); }
+.hero-cup__coffee {
+  inset: 6%;
+  background:
+    radial-gradient(ellipse 60% 34% at 34% 26%, rgba(255,235,200,.22), transparent 70%),
+    radial-gradient(circle at 42% 38%, #4a2a12, var(--brown-deep) 58%, #1c0d04);
+  box-shadow: inset 0 8px 22px rgba(0,0,0,.55), inset 0 0 0 8px rgba(190,140,85,.28);
+}
+
+.brand__foot { margin-top: auto; }
+.brand__desc {
+  font-size: 10.5px;
+  line-height: 1.65;
+  color: var(--muted);
+  text-align: right;
+  max-width: 215px;
+  margin-left: auto;
+}
+.brand__slogan {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: clamp(28px, 3.2vw, 42px);
+  line-height: 1.02;
+  letter-spacing: .1em;
+  color: var(--ink);
+  text-align: right;
+  margin-top: 14px;
+}
+
+/* ============================================================
+   RESPONSIVE
+   ============================================================ */
+@media (max-width: 820px) {
+  .poster { grid-template-columns: 1fr; }
+  .brand {
+    order: -1; /* brand header on top, like a mobile hero */
+    border-left: none;
+    border-bottom: 1px solid var(--paper-edge);
+    text-align: center;
+  }
+  .brand__name, .brand__slogan { text-align: center; }
+  .brand__desc { text-align: center; margin-inline: auto; }
+  .hero-cup { width: min(260px, 75%); margin-block: 26px; }
+}
+
+@media (max-width: 460px) {
+  .menu-grid { gap: 24px 10px; }
+  .item p { font-size: 10px; }
+  .cup { width: 92px; height: 92px; }
+}
