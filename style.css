@@ -1,323 +1,459 @@
-/* ============================================================
-   COFFEE SHOP — Menu & Price List
-   Recreated from the reference poster with pure HTML + CSS.
-   Every coffee cup is drawn with CSS (no images needed).
-   ============================================================ */
-
+/* Coffee Shop menu poster — recreated in HTML and CSS. */
 :root {
-  --cream:        #f7f2e3;
-  --cream-dark:   #ede5d2;
-  --paper-edge:   #e3dac4;
-  --ink:          #2e2118;
-  --brown:        #4a2c17;
-  --brown-deep:   #2b170a;
-  --coffee:       #3a2110;
-  --caramel:      #a9713d;
-  --muted:        #7d7263;
-  --cup-white:    #fdfbf6;
-  --saucer:       #ddd5bf;
-
-  --font-display: "Barlow Condensed", "Arial Narrow", sans-serif;
-  --font-body:    "Inter", "Helvetica Neue", Arial, sans-serif;
+  color-scheme: light;
+  --paper: #fff8e8;
+  --menu-paper: #f2ebd9;
+  --brand-paper: #fcf5e5;
+  --ink: #35241b;
+  --muted: #62574e;
+  --coffee: #3d2418;
+  --cup: #fffdf7;
 }
 
-* { margin: 0; padding: 0; box-sizing: border-box; }
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  min-height: 100%;
+  margin: 0;
+}
 
 body {
-  font-family: var(--font-body);
-  background: #d9d0ba;
-  color: var(--ink);
   min-height: 100vh;
-  display: flex;
-  justify-content: center;
-}
-
-/* ---------- Poster layout ---------- */
-.poster {
-  width: min(1120px, 100%);
-  min-height: 100vh;
-  background: var(--cream);
+  min-height: 100svh;
   display: grid;
-  grid-template-columns: 1.85fr 1fr;
-  box-shadow: 0 0 60px rgba(46, 28, 10, .25);
+  place-items: center;
+  overflow-x: hidden;
+  background: #e8dfd1;
+  color: var(--ink);
+  font-family: Arial, "Helvetica Neue", Helvetica, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: geometricPrecision;
 }
 
-/* ============================================================
-   LEFT — MENU
-   ============================================================ */
+/* The source poster is a 4:5 portrait. cqw keeps every detail in scale. */
+.poster {
+  position: relative;
+  display: grid;
+  grid-template-columns: 63% 37%;
+  width: min(100vw, 80svh, 800px);
+  aspect-ratio: 4 / 5;
+  overflow: hidden;
+  isolation: isolate;
+  container-type: inline-size;
+  background: var(--paper);
+  box-shadow: 0 1.5cqw 5cqw rgb(52 35 22 / 16%);
+}
+
+/* ------------------------------ Menu panel ------------------------------ */
 .menu {
-  padding: clamp(28px, 4.5vw, 52px) clamp(24px, 4.5vw, 60px);
+  position: relative;
+  min-width: 0;
+  padding: 5.3cqw 5cqw 0;
+  background: var(--menu-paper);
+}
+
+/* Thin pale paper edge visible along the left side of the reference. */
+.menu::before {
+  position: absolute;
+  z-index: 0;
+  inset: 0 auto 0 0;
+  width: 2.5cqw;
+  background: var(--paper);
+  content: "";
+}
+
+.menu h1,
+.menu-grid {
+  position: relative;
+  z-index: 1;
 }
 
 .menu h1 {
-  font-family: var(--font-display);
-  font-weight: 600;
-  font-size: clamp(26px, 3.4vw, 40px);
-  letter-spacing: .22em;
-  color: var(--ink);
-  margin-bottom: clamp(26px, 3.5vw, 44px);
+  margin: 0 0 3.3cqw 5cqw;
+  color: #3c3029;
+  font-size: 4.05cqw;
+  font-weight: 500;
+  line-height: 1.2;
+  letter-spacing: .09em;
+  white-space: nowrap;
 }
 
 .menu-grid {
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: clamp(26px, 3.2vw, 42px) clamp(20px, 3vw, 44px);
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-rows: repeat(4, minmax(0, 1fr));
+  width: 54.5cqw;
+  height: 106.25cqw;
+  row-gap: 1.8cqw;
 }
 
 .item {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  align-items: center;
+  padding-top: .45cqw;
   text-align: center;
-  padding: 6px 8px 2px;
-  border-radius: 14px;
-  transition: transform .35s ease;
 }
-.item:hover { transform: translateY(-5px); }
 
 .item h2 {
-  font-family: var(--font-display);
-  font-weight: 600;
-  font-size: clamp(19px, 1.9vw, 24px);
-  letter-spacing: .06em;
-  margin-top: 12px;
+  margin: .65cqw 0 0;
+  color: #382820;
+  font-size: 2cqw;
+  font-weight: 700;
+  line-height: 1.1;
+  letter-spacing: .025em;
+  white-space: nowrap;
 }
 
 .item p {
-  font-size: 10.5px;
-  line-height: 1.55;
+  max-width: 25cqw;
+  margin: .15cqw 0 0;
   color: var(--muted);
-  max-width: 185px;
-  margin: 5px auto 6px;
+  font-size: 1.14cqw;
+  font-weight: 400;
+  line-height: 1.2;
+  letter-spacing: .005em;
 }
 
 .price {
-  font-family: var(--font-display);
+  margin-top: .35cqw;
+  color: #3f2b20;
+  font-size: 1.65cqw;
   font-weight: 700;
-  font-size: 18px;
+  line-height: 1;
   letter-spacing: .08em;
-  color: var(--brown);
 }
 
-/* ============================================================
-   CSS COFFEE CUPS (top view)
-   .cup > .saucer + .mug > .coffee (+ optional art span)
-   ============================================================ */
+/* ---------------------------- CSS coffee art ---------------------------- */
 .cup {
   position: relative;
-  width: 112px;
-  height: 112px;
-  margin: 0 auto;
-  transition: transform .35s ease;
+  flex: 0 0 auto;
+  width: 15.5cqw;
+  height: 15.5cqw;
 }
-.item:hover .cup { transform: rotate(-4deg) scale(1.05); }
 
 .cup .saucer,
 .hero-cup__saucer {
-  position: absolute; inset: 0;
+  position: absolute;
+  inset: 0;
+  display: block;
   border-radius: 50%;
-  background: radial-gradient(circle, #efe9d8 0 52%, var(--saucer) 72%, #cfc4a8 100%);
-  box-shadow: 0 6px 14px rgba(59, 35, 16, .22), inset 0 0 0 5px rgba(255,255,255,.35);
+  background:
+    radial-gradient(circle,
+      #eee9df 0 49%,
+      #c9c1b6 50% 57%,
+      #fffaf1 58% 72%,
+      #bfb5a8 73% 100%);
+  box-shadow:
+    0 .45cqw 1.3cqw rgb(70 52 36 / 22%),
+    inset 0 0 0 .7cqw rgb(255 255 255 / 42%);
 }
 
 .cup .mug,
 .hero-cup__mug {
-  position: absolute; inset: 14px;
-  z-index: 1; /* keeps the handle above the saucer, tucked behind the mug */
+  position: absolute;
+  z-index: 1;
+  display: block;
   border-radius: 50%;
-  background: var(--cup-white);
-  box-shadow: 0 3px 8px rgba(59, 35, 16, .3), inset 0 -3px 6px rgba(0,0,0,.08);
+  background: linear-gradient(145deg, #fffefa, #f6f1e7);
+  box-shadow:
+    0 .45cqw 1cqw rgb(61 42 29 / 26%),
+    inset 0 -.7cqw 1.2cqw rgb(61 42 29 / 9%);
 }
-/* handle */
+
+/* The handle sits behind the cup but above the saucer. */
 .cup .mug::after,
 .hero-cup__mug::after {
-  content: "";
   position: absolute;
-  right: -13px; top: 50%;
-  width: 22px; height: 30px;
-  transform: translateY(-50%);
-  border: 7px solid var(--cup-white);
-  border-left: none;
-  border-radius: 0 22px 22px 0;
-  filter: drop-shadow(2px 2px 2px rgba(59,35,16,.25));
   z-index: -1;
+  top: 50%;
+  display: block;
+  border: solid var(--cup);
+  border-left: 0;
+  border-radius: 0 999px 999px 0;
+  content: "";
+  transform: translateY(-50%);
+  filter: drop-shadow(.35cqw .35cqw .45cqw rgb(54 36 22 / 22%));
+}
+
+.cup .mug {
+  inset: 12%;
+}
+
+.cup .mug::after {
+  right: -17%;
+  width: 29%;
+  height: 34%;
+  border-width: .95cqw;
 }
 
 .cup .coffee,
 .hero-cup__coffee {
-  position: absolute; inset: 8px;
-  border-radius: 50%;
+  position: absolute;
+  inset: 10%;
+  display: block;
   overflow: hidden;
-  box-shadow: inset 0 3px 8px rgba(0,0,0,.45), inset 0 0 0 3px rgba(169,113,61,.35);
-  background: radial-gradient(circle at 38% 34%, #5a3418, var(--coffee) 58%, var(--brown-deep));
+  border-radius: 50%;
+  background: radial-gradient(circle at 38% 34%, #764a2b, #432718 62%, #26150d);
+  box-shadow:
+    inset 0 .75cqw 1.4cqw rgb(0 0 0 / 43%),
+    inset 0 0 0 .75cqw rgb(177 124 68 / 43%);
 }
 
-/* --- each drink --- */
 .cup--espresso .coffee {
   background:
-    radial-gradient(circle at 30% 30%, rgba(214,164,102,.55) 0 4px, transparent 5px),
-    radial-gradient(circle at 66% 58%, rgba(214,164,102,.4) 0 3px, transparent 4px),
-    radial-gradient(circle at 48% 76%, rgba(214,164,102,.35) 0 2px, transparent 3px),
-    radial-gradient(circle at 40% 35%, #6b3d1c, #331b09 62%, #211003);
+    radial-gradient(circle at 29% 32%, #754522 0 2.4%, transparent 3.1%),
+    radial-gradient(circle at 67% 53%, #714322 0 2%, transparent 2.8%),
+    radial-gradient(circle at 45% 72%, #754820 0 1.8%, transparent 2.6%),
+    radial-gradient(circle at 58% 23%, #754522 0 1.6%, transparent 2.4%),
+    radial-gradient(circle at 39% 38%, #bd8952, #a56e3c 60%, #75431f);
 }
+
 .cup--double .coffee {
   background:
-    radial-gradient(circle at 60% 30%, rgba(214,164,102,.35) 0 3px, transparent 4px),
-    radial-gradient(circle at 42% 38%, #54300f, #241204 60%, #170a02);
+    radial-gradient(circle at 70% 35%, rgb(247 202 139 / 45%) 0 2%, transparent 2.8%),
+    radial-gradient(circle at 38% 32%, #c18b51, #a8733d 62%, #74431f);
 }
+
 .cup--americano .coffee {
   background:
-    radial-gradient(circle at 68% 40%, rgba(230,190,140,.28) 0 6px, transparent 8px),
-    radial-gradient(circle at 40% 35%, #4c2a10, #1f0f04 65%, #140801);
+    radial-gradient(ellipse at 79% 50%, rgb(205 151 90 / 78%) 0 7%, transparent 19%),
+    radial-gradient(circle at 38% 34%, #4c2b18, #2a180f 68%, #1b100a);
 }
+
 .cup--cappuccino .coffee {
-  background: radial-gradient(circle at 42% 38%, #8a5a30, #5d3a1e 60%, #3c2312);
+  background: radial-gradient(circle at 42% 38%, #a36d3d, #754a28 68%, #4a2b18);
 }
-.cup--latte .coffee {
-  background: radial-gradient(circle at 45% 40%, #c68b4e, #a9713d 58%, #7d4f27);
-}
-.cup--mocha .coffee {
-  background: radial-gradient(circle at 42% 38%, #7a4a26, #4e2c14 60%, #2e1709);
-}
-.cup--macchiato .coffee { /* caramel cross-hatch drizzle */
+
+.foam {
+  position: absolute;
+  inset: 16%;
+  border-radius: 50%;
   background:
-    repeating-linear-gradient(45deg,  transparent 0 7px, rgba(240,196,130,.85) 7px 10px),
-    repeating-linear-gradient(-45deg, transparent 0 7px, rgba(240,196,130,.85) 7px 10px),
-    radial-gradient(circle at 45% 40%, #b57e42, #8a5a2b 65%, #5f3a1a);
+    radial-gradient(circle at 50% 46%, transparent 0 32%, rgb(111 68 34 / 54%) 34% 37%, transparent 40%),
+    radial-gradient(circle at 45% 40%, #fffdf3, #f2e8d6 75%, #dfceb1);
+  box-shadow: inset 0 0 0 .55cqw rgb(108 66 36 / 24%);
 }
+
+.foam::after {
+  position: absolute;
+  inset: 18%;
+  border-radius: 50%;
+  background:
+    radial-gradient(circle at 28% 35%, rgb(93 55 29 / 72%) 0 4%, transparent 6%),
+    radial-gradient(circle at 70% 31%, rgb(93 55 29 / 65%) 0 3.5%, transparent 5.5%),
+    radial-gradient(circle at 55% 70%, rgb(93 55 29 / 68%) 0 4%, transparent 6%),
+    radial-gradient(circle at 77% 67%, rgb(93 55 29 / 55%) 0 3%, transparent 5%);
+  content: "";
+}
+
+.cup--latte .coffee {
+  background: radial-gradient(circle at 43% 40%, #c98b4e, #b7753c 68%, #8c5129);
+}
+
+.heart {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 5.1cqw;
+  height: 5.1cqw;
+  border-radius: 16%;
+  background: #fff8e9;
+  box-shadow: 0 0 0 .8cqw rgb(255 248 233 / 25%);
+  transform: translate(-50%, -50%) rotate(45deg) scale(.72);
+}
+
+.heart::before,
+.heart::after {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  background: #fff8e9;
+  content: "";
+}
+
+.heart::before {
+  top: 0;
+  left: -50%;
+}
+
+.heart::after {
+  top: -50%;
+  left: 0;
+}
+
+.cup--mocha .coffee {
+  background: radial-gradient(circle at 45% 40%, #b07942, #87552d 66%, #57331c);
+}
+
+.swirl {
+  position: absolute;
+  inset: 18%;
+  border-radius: 50%;
+  background: conic-gradient(from 20deg, #fff8e8, #d4b88d, #fff8e8, #a97843, #fff8e8);
+  -webkit-mask: radial-gradient(circle, transparent 0 18%, #000 21% 38%, transparent 41% 50%, #000 53% 70%, transparent 73%);
+  mask: radial-gradient(circle, transparent 0 18%, #000 21% 38%, transparent 41% 50%, #000 53% 70%, transparent 73%);
+  opacity: .96;
+}
+
+.cup--macchiato .coffee {
+  background:
+    repeating-linear-gradient(45deg, transparent 0 12%, rgb(247 211 152 / 92%) 12% 17%),
+    repeating-linear-gradient(-45deg, transparent 0 12%, rgb(247 211 152 / 92%) 12% 17%),
+    radial-gradient(circle at 45% 40%, #bd8648, #9b622e 68%, #70411e);
+}
+
 .cup--flatwhite .coffee {
   background:
-    radial-gradient(circle, #f3e3c8 0 24%, rgba(243,227,200,.25) 27%, transparent 34%),
-    radial-gradient(circle at 45% 40%, #c99a5f, #a5713a 62%, #7d4f27);
+    radial-gradient(circle, #fff9e8 0 27%, #f4e6c9 29% 39%, transparent 42%),
+    radial-gradient(circle at 45% 42%, #d1b77e, #b89b60 68%, #8e7044);
 }
 
-/* --- foam art --- */
-.foam { /* cappuccino foam blob dusted with cocoa */
-  position: absolute; inset: 16% 14% 14% 18%;
-  border-radius: 48% 52% 55% 45%;
-  background: radial-gradient(circle at 42% 38%, #fffaf0, #f0dfc2 70%, #dfc298);
-  box-shadow: inset 0 0 0 3px rgba(122,74,38,.18);
-}
-.foam::after {
-  content: ""; position: absolute; inset: 28% 24%;
-  border-radius: 50%;
-  background:
-    radial-gradient(circle at 30% 40%, rgba(90,52,24,.75) 0 2px, transparent 3px),
-    radial-gradient(circle at 62% 30%, rgba(90,52,24,.65) 0 2px, transparent 3px),
-    radial-gradient(circle at 50% 66%, rgba(90,52,24,.7) 0 2px, transparent 3px),
-    radial-gradient(circle at 72% 62%, rgba(90,52,24,.55) 0 1.5px, transparent 2.5px);
-}
-
-.heart { /* latte-art heart */
-  position: absolute; left: 50%; top: 52%;
-  width: 22px; height: 22px;
-  background: #f8ecd6;
-  transform: translate(-50%, -50%) rotate(45deg);
-  border-radius: 4px;
-  box-shadow: 0 0 0 4px rgba(248,236,214,.25);
-}
-.heart::before, .heart::after {
-  content: ""; position: absolute;
-  width: 22px; height: 22px; border-radius: 50%; background: #f8ecd6;
-}
-.heart::before { left: -11px; top: 0; }
-.heart::after  { left: 0; top: -11px; }
-
-.swirl { /* mocha cream swirl */
-  position: absolute; inset: 20%;
-  border-radius: 50%;
-  background: conic-gradient(from 20deg, #f4e6cc, #b98b58, #f4e6cc, #8a5a30, #f4e6cc);
-  -webkit-mask: radial-gradient(circle, transparent 0 22%, #000 24% 42%, transparent 44% 52%, #000 54% 72%, transparent 74%);
-          mask: radial-gradient(circle, transparent 0 22%, #000 24% 42%, transparent 44% 52%, #000 54% 72%, transparent 74%);
-  opacity: .9;
-}
-
-/* ============================================================
-   RIGHT — BRAND PANEL
-   ============================================================ */
+/* ---------------------------- Brand panel ------------------------------- */
 .brand {
-  background: var(--cream-dark);
-  border-left: 1px solid var(--paper-edge);
-  padding: clamp(28px, 4vw, 48px) clamp(22px, 3vw, 40px);
-  display: flex;
-  flex-direction: column;
+  position: relative;
+  min-width: 0;
   overflow: hidden;
+  border-left: .25cqw solid #e6dece;
+  background: var(--brand-paper);
+}
+
+.brand__head,
+.brand__foot {
+  position: absolute;
+  z-index: 2;
+}
+
+.brand__head {
+  top: 4.7cqw;
+  left: 5cqw;
 }
 
 .brand__name {
-  font-family: var(--font-display);
-  font-weight: 700;
-  font-size: clamp(38px, 4.2vw, 54px);
-  line-height: .95;
-  letter-spacing: .18em;
-  color: var(--ink);
+  margin: 0;
+  color: #321e14;
+  font-size: 6.15cqw;
+  font-weight: 800;
+  line-height: .93;
+  letter-spacing: .08em;
 }
+
+.brand__name span {
+  display: block;
+  width: max-content;
+  transform: scaleX(.9);
+  transform-origin: left center;
+  white-space: nowrap;
+}
+
+.brand__name .brand__name-second {
+  letter-spacing: .36em;
+}
+
 .brand__tag {
-  font-family: var(--font-display);
-  font-weight: 600;
-  font-size: clamp(12px, 1.3vw, 16px);
-  letter-spacing: .34em;
-  color: var(--brown);
-  margin-top: 8px;
-}
-
-/* big hero cup */
-.hero-cup {
-  position: relative;
-  width: min(330px, 92%);
-  aspect-ratio: 1;
-  margin: clamp(28px, 4vw, 52px) auto;
-  flex-shrink: 0;
-}
-.hero-cup__saucer {
-  background: radial-gradient(circle, #f2ecdc 0 46%, #ddd2b8 62%, #c9bb9c 78%, #e9e1cd 100%);
-  box-shadow: 0 14px 30px rgba(59,35,16,.25);
-}
-.hero-cup__mug { inset: 13.5%; }
-.hero-cup__mug::after { right: -17%; width: 34%; height: 42%; border-width: clamp(12px, 2.4vw, 22px); }
-.hero-cup__coffee {
-  inset: 6%;
-  background:
-    radial-gradient(ellipse 60% 34% at 34% 26%, rgba(255,235,200,.22), transparent 70%),
-    radial-gradient(circle at 42% 38%, #4a2a12, var(--brown-deep) 58%, #1c0d04);
-  box-shadow: inset 0 8px 22px rgba(0,0,0,.55), inset 0 0 0 8px rgba(190,140,85,.28);
-}
-
-.brand__foot { margin-top: auto; }
-.brand__desc {
-  font-size: 10.5px;
-  line-height: 1.65;
-  color: var(--muted);
-  text-align: right;
-  max-width: 215px;
-  margin-left: auto;
-}
-.brand__slogan {
-  font-family: var(--font-display);
+  width: max-content;
+  margin: .8cqw 0 0;
+  color: #3d2b21;
+  font-size: 1.8cqw;
   font-weight: 700;
-  font-size: clamp(28px, 3.2vw, 42px);
-  line-height: 1.02;
-  letter-spacing: .1em;
-  color: var(--ink);
-  text-align: right;
-  margin-top: 14px;
+  line-height: 1.1;
+  letter-spacing: .2em;
+  transform: scaleX(.9);
+  transform-origin: left center;
+  white-space: nowrap;
 }
 
-/* ============================================================
-   RESPONSIVE
-   ============================================================ */
-@media (max-width: 820px) {
-  .poster { grid-template-columns: 1fr; }
-  .brand {
-    order: -1; /* brand header on top, like a mobile hero */
-    border-left: none;
-    border-bottom: 1px solid var(--paper-edge);
-    text-align: center;
-  }
-  .brand__name, .brand__slogan { text-align: center; }
-  .brand__desc { text-align: center; margin-inline: auto; }
-  .hero-cup { width: min(260px, 75%); margin-block: 26px; }
+/* Oversized cup bleeds beneath the logo and is clipped at the panel edges. */
+.hero-cup {
+  position: absolute;
+  z-index: 1;
+  top: 30.5cqw;
+  left: -21.75cqw;
+  width: 53cqw;
+  height: 53cqw;
 }
 
-@media (max-width: 460px) {
-  .menu-grid { gap: 24px 10px; }
-  .item p { font-size: 10px; }
-  .cup { width: 92px; height: 92px; }
+.hero-cup__saucer {
+  background:
+    radial-gradient(circle,
+      #dfd6c8 0 58%,
+      #faf5e9 59% 63%,
+      #a59a8a 64% 70%,
+      #f2ebde 71% 87%,
+      #c6bcad 88% 100%);
+  box-shadow: 0 .8cqw 2cqw rgb(58 42 29 / 18%);
+}
+
+.hero-cup__mug {
+  inset: 19%;
+  background: linear-gradient(145deg, #fffefa, #f1ece3);
+  box-shadow:
+    0 .8cqw 1.8cqw rgb(54 36 22 / 25%),
+    inset 0 -.8cqw 1.5cqw rgb(53 37 27 / 13%);
+}
+
+.hero-cup__mug::after {
+  right: -30%;
+  width: 45%;
+  height: 19%;
+  border-width: 2.2cqw;
+}
+
+.hero-cup__coffee {
+  inset: 10%;
+  background:
+    radial-gradient(ellipse 62% 36% at 34% 25%, rgb(255 231 190 / 18%), transparent 72%),
+    radial-gradient(circle at 42% 38%, #593b2e, #4a3025 68%, #2b1912);
+  box-shadow:
+    inset 0 2cqw 4cqw rgb(0 0 0 / 48%),
+    inset 0 0 0 1.7cqw rgb(181 132 80 / 48%);
+}
+
+.brand__foot {
+  right: 2.5cqw;
+  bottom: 3.7cqw;
+  left: 5cqw;
+}
+
+.brand__desc {
+  margin: 0;
+  padding-left: 2.2cqw;
+  border-left: .25cqw solid #726657;
+  color: #60574e;
+  font-size: 1.4cqw;
+  font-weight: 400;
+  line-height: 1.3;
+  letter-spacing: .005em;
+}
+
+.brand__slogan {
+  margin: 2cqw 0 0;
+  color: #38241a;
+  font-weight: 800;
+  letter-spacing: .015em;
+}
+
+.brand__slogan span {
+  display: block;
+  width: max-content;
+  white-space: nowrap;
+}
+
+.slogan-large {
+  font-size: 6cqw;
+  line-height: .93;
+  transform: scaleX(.9);
+  transform-origin: left center;
+}
+
+.slogan-small {
+  font-size: 4.6cqw;
+  line-height: 1.06;
+  transform: scaleX(.73);
+  transform-origin: left center;
 }

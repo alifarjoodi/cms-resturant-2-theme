@@ -3,28 +3,23 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#fff8e8" />
   <title>Coffee Shop — Menu &amp; Price List</title>
   <meta name="description" content="Coffee Shop menu — brewed for the bold. Espresso, cappuccino, latte, mocha and more, $5 each." />
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-  <main class="poster">
-
-    <!-- ============ LEFT : MENU ============ -->
+  <main class="poster" aria-label="Coffee Shop menu and price list">
     <section class="menu" aria-labelledby="menu-title">
       <h1 id="menu-title">MENU &amp; PRICE LIST</h1>
 
       <div class="menu-grid">
-
         <article class="item">
           <div class="cup cup--espresso" aria-hidden="true">
             <span class="saucer"></span><span class="mug"><span class="coffee"></span></span>
           </div>
           <h2>Espresso</h2>
-          <p>A little cup of comfort indulged in the deep, roasted flavor of our espresso.</p>
+          <p>A little cup of comfort,<br />indulge in the deep, roasted<br />flavor of our espresso.</p>
           <span class="price">$5</span>
         </article>
 
@@ -33,7 +28,7 @@
             <span class="saucer"></span><span class="mug"><span class="coffee"></span></span>
           </div>
           <h2>Double Espresso</h2>
-          <p>A little cup of comfort indulged in the deep, roasted flavor of our espresso.</p>
+          <p>A little cup of comfort,<br />indulge in the deep, roasted<br />flavor of our espresso.</p>
           <span class="price">$5</span>
         </article>
 
@@ -42,7 +37,7 @@
             <span class="saucer"></span><span class="mug"><span class="coffee"></span></span>
           </div>
           <h2>Americano</h2>
-          <p>A little cup of comfort indulged in the deep, roasted flavor of our espresso.</p>
+          <p>A little cup of comfort,<br />indulge in the deep, roasted<br />flavor of our espresso.</p>
           <span class="price">$5</span>
         </article>
 
@@ -51,7 +46,7 @@
             <span class="saucer"></span><span class="mug"><span class="coffee"><span class="foam"></span></span></span>
           </div>
           <h2>Cappuccino</h2>
-          <p>A little cup of comfort indulged in the deep, roasted flavor of our espresso.</p>
+          <p>A little cup of comfort,<br />indulge in the deep, roasted<br />flavor of our espresso.</p>
           <span class="price">$5</span>
         </article>
 
@@ -60,7 +55,7 @@
             <span class="saucer"></span><span class="mug"><span class="coffee"><span class="heart"></span></span></span>
           </div>
           <h2>Latte</h2>
-          <p>A little cup of comfort indulged in the deep, roasted flavor of our espresso.</p>
+          <p>A little cup of comfort,<br />indulge in the deep, roasted<br />flavor of our espresso.</p>
           <span class="price">$5</span>
         </article>
 
@@ -69,7 +64,7 @@
             <span class="saucer"></span><span class="mug"><span class="coffee"><span class="swirl"></span></span></span>
           </div>
           <h2>Mocha</h2>
-          <p>A little cup of comfort indulged in the deep, roasted flavor of our espresso.</p>
+          <p>A little cup of comfort,<br />indulge in the deep, roasted<br />flavor of our espresso.</p>
           <span class="price">$5</span>
         </article>
 
@@ -78,7 +73,7 @@
             <span class="saucer"></span><span class="mug"><span class="coffee"></span></span>
           </div>
           <h2>Macchiato</h2>
-          <p>A little cup of comfort indulged in the deep, roasted flavor of our espresso.</p>
+          <p>A little cup of comfort,<br />indulge in the deep, roasted<br />flavor of our espresso.</p>
           <span class="price">$5</span>
         </article>
 
@@ -87,17 +82,15 @@
             <span class="saucer"></span><span class="mug"><span class="coffee"></span></span>
           </div>
           <h2>Flat White</h2>
-          <p>A little cup of comfort indulged in the deep, roasted flavor of our espresso.</p>
+          <p>A little cup of comfort,<br />indulge in the deep, roasted<br />flavor of our espresso.</p>
           <span class="price">$5</span>
         </article>
-
       </div>
     </section>
 
-    <!-- ============ RIGHT : BRAND ============ -->
-    <aside class="brand">
+    <aside class="brand" aria-label="Coffee Shop branding">
       <header class="brand__head">
-        <p class="brand__name">COFFEE<br />SHOP</p>
+        <p class="brand__name"><span>COFFEE</span><span class="brand__name-second">SHOP</span></p>
         <p class="brand__tag">BREWED FOR THE BOLD</p>
       </header>
 
@@ -107,14 +100,15 @@
       </div>
 
       <div class="brand__foot">
-        <p class="brand__desc">
-          A perfect cup of coffee, made just for you. Energize your
-          morning and fuel your day with our premium blends.
+        <p class="brand__desc">A perfect cup of coffee, made<br />just for you. Energize your<br />morning and fuel your day with<br />our premium blends.</p>
+        <p class="brand__slogan" aria-label="Brewed for comfort, crafted for you">
+          <span class="slogan-large">BREWED</span>
+          <span class="slogan-small">FOR COMFORT,</span>
+          <span class="slogan-large">CRAFTED</span>
+          <span class="slogan-small">FOR YOU</span>
         </p>
-        <p class="brand__slogan">BREWED<br />FOR COMFORT,<br />CRAFTED<br />FOR YOU</p>
       </div>
     </aside>
-
   </main>
 </body>
 </html>
