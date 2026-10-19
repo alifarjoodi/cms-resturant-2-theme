@@ -7,6 +7,7 @@
   <title>Coffee Shop — Menu &amp; Price List</title>
   <meta name="description" content="Coffee Shop menu — brewed for the bold. Espresso, cappuccino, latte, mocha and more, $5 each." />
   <link rel="stylesheet" href="style.css" />
+  <script src="app.js" defer></script>
 </head>
 <body>
   <main class="poster" aria-label="Coffee Shop menu and price list">
@@ -14,7 +15,12 @@
       <h1 id="menu-title">MENU &amp; PRICE LIST</h1>
 
       <div class="menu-grid">
-        <article class="item">
+        <article class="item" role="button" tabindex="0" aria-haspopup="dialog" aria-controls="item-detail"
+          aria-label="Open details for Espresso, $5"
+          data-name="Espresso" data-num="01" data-category="Espresso bar" data-price="$5"
+          data-desc="A little cup of comfort — a dense, syrupy shot pulled slow for a deep, roasted finish that lingers."
+          data-notes="Dark chocolate|Toasted hazelnut|Brown sugar"
+          data-intensity="5" data-volume="30 ml" data-temp="88 °C">
           <div class="cup cup--espresso" aria-hidden="true">
             <span class="saucer"></span><span class="mug"><span class="coffee"></span></span>
           </div>
@@ -23,7 +29,12 @@
           <span class="price">$5</span>
         </article>
 
-        <article class="item">
+        <article class="item" role="button" tabindex="0" aria-haspopup="dialog" aria-controls="item-detail"
+          aria-label="Open details for Double Espresso, $5"
+          data-name="Double Espresso" data-num="02" data-category="Espresso bar" data-price="$5"
+          data-desc="A little cup of comfort — twice the coffee, twice the crema. Bold, velvety and unapologetically intense."
+          data-notes="Cocoa nib|Caramel|Smoked cedar"
+          data-intensity="5" data-volume="60 ml" data-temp="88 °C">
           <div class="cup cup--double" aria-hidden="true">
             <span class="saucer"></span><span class="mug"><span class="coffee"></span></span>
           </div>
@@ -32,7 +43,12 @@
           <span class="price">$5</span>
         </article>
 
-        <article class="item">
+        <article class="item" role="button" tabindex="0" aria-haspopup="dialog" aria-controls="item-detail"
+          aria-label="Open details for Americano, $5"
+          data-name="Americano" data-num="03" data-category="Long black" data-price="$5"
+          data-desc="A little cup of comfort — espresso lengthened with hot water, opening a clean, aromatic cup with a gentle bitterness."
+          data-notes="Roasted almond|Citrus peel|Black tea"
+          data-intensity="4" data-volume="180 ml" data-temp="92 °C">
           <div class="cup cup--americano" aria-hidden="true">
             <span class="saucer"></span><span class="mug"><span class="coffee"></span></span>
           </div>
@@ -41,7 +57,12 @@
           <span class="price">$5</span>
         </article>
 
-        <article class="item">
+        <article class="item" role="button" tabindex="0" aria-haspopup="dialog" aria-controls="item-detail"
+          aria-label="Open details for Cappuccino, $5"
+          data-name="Cappuccino" data-num="04" data-category="Milk &amp; foam" data-price="$5"
+          data-desc="A little cup of comfort — a bold espresso heart beneath a dome of velvety microfoam and a whisper of cocoa."
+          data-notes="Vanilla bean|Cocoa dust|Steamed milk"
+          data-intensity="3" data-volume="160 ml" data-temp="88 °C">
           <div class="cup cup--cappuccino" aria-hidden="true">
             <span class="saucer"></span><span class="mug"><span class="coffee"><span class="foam"></span></span></span>
           </div>
@@ -50,7 +71,12 @@
           <span class="price">$5</span>
         </article>
 
-        <article class="item">
+        <article class="item" role="button" tabindex="0" aria-haspopup="dialog" aria-controls="item-detail"
+          aria-label="Open details for Latte, $5"
+          data-name="Latte" data-num="05" data-category="Milk &amp; foam" data-price="$5"
+          data-desc="A little cup of comfort — silky steamed milk poured over espresso and finished with a hand-drawn heart."
+          data-notes="Fresh cream|Honey|Toasted grain"
+          data-intensity="2" data-volume="240 ml" data-temp="85 °C">
           <div class="cup cup--latte" aria-hidden="true">
             <span class="saucer"></span><span class="mug"><span class="coffee"><span class="heart"></span></span></span>
           </div>
@@ -59,7 +85,12 @@
           <span class="price">$5</span>
         </article>
 
-        <article class="item">
+        <article class="item" role="button" tabindex="0" aria-haspopup="dialog" aria-controls="item-detail"
+          aria-label="Open details for Mocha, $5"
+          data-name="Mocha" data-num="06" data-category="Sweet &amp; dark" data-price="$5"
+          data-desc="A little cup of comfort — rich cocoa folded into espresso and steamed milk. Dessert, served in a cup."
+          data-notes="70% chocolate|Molasses|Velvet cream"
+          data-intensity="3" data-volume="240 ml" data-temp="85 °C">
           <div class="cup cup--mocha" aria-hidden="true">
             <span class="saucer"></span><span class="mug"><span class="coffee"><span class="swirl"></span></span></span>
           </div>
@@ -68,7 +99,12 @@
           <span class="price">$5</span>
         </article>
 
-        <article class="item">
+        <article class="item" role="button" tabindex="0" aria-haspopup="dialog" aria-controls="item-detail"
+          aria-label="Open details for Macchiato, $5"
+          data-name="Macchiato" data-num="07" data-category="Espresso bar" data-price="$5"
+          data-desc="A little cup of comfort — an espresso marked with a spot of foam. Small, strong and pleasingly rounded."
+          data-notes="Burnt sugar|Hazelnut|Warm cream"
+          data-intensity="4" data-volume="40 ml" data-temp="88 °C">
           <div class="cup cup--macchiato" aria-hidden="true">
             <span class="saucer"></span><span class="mug"><span class="coffee"></span></span>
           </div>
@@ -77,7 +113,12 @@
           <span class="price">$5</span>
         </article>
 
-        <article class="item">
+        <article class="item" role="button" tabindex="0" aria-haspopup="dialog" aria-controls="item-detail"
+          aria-label="Open details for Flat White, $5"
+          data-name="Flat White" data-num="08" data-category="Milk &amp; foam" data-price="$5"
+          data-desc="A little cup of comfort — a double ristretto base under a thin, glossy layer of silky microfoam."
+          data-notes="Toffee|Walnut|Buttered toast"
+          data-intensity="3" data-volume="170 ml" data-temp="88 °C">
           <div class="cup cup--flatwhite" aria-hidden="true">
             <span class="saucer"></span><span class="mug"><span class="coffee"></span></span>
           </div>
@@ -110,5 +151,68 @@
       </div>
     </aside>
   </main>
+
+  <!-- Glass detail panel: unfolds from a top view into a side view on the right edge. -->
+  <dialog class="detail" id="item-detail" aria-labelledby="detail-name" aria-describedby="detail-desc">
+    <span class="detail__edge" aria-hidden="true"></span>
+    <div class="detail__glass">
+      <span class="detail__scan" aria-hidden="true"></span>
+
+      <div class="detail__topbar">
+        <p class="detail__brand">Coffee Shop <span aria-hidden="true">·</span> Menu</p>
+        <button class="detail__close" type="button" aria-label="Close item details">
+          <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+            <path d="M6 6l12 12M18 6 6 18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
+          </svg>
+        </button>
+      </div>
+
+      <div class="detail__body">
+        <div class="detail__info">
+          <p class="detail__eyebrow">
+            <span class="detail__num">N° 01</span>
+            <span class="detail__cat">Espresso bar</span>
+          </p>
+          <h2 class="detail__name" id="detail-name">Espresso</h2>
+          <p class="detail__desc" id="detail-desc">A little cup of comfort — a dense, syrupy shot pulled slow for a deep, roasted finish that lingers.</p>
+          <ul class="detail__notes" aria-label="Flavor notes"></ul>
+          <div class="detail__stats">
+            <div class="detail__stat">
+              <span class="detail__stat-label">Intensity</span>
+              <span class="detail__dots" aria-label="5 out of 5"></span>
+            </div>
+            <div class="detail__stat">
+              <span class="detail__stat-label">Volume</span>
+              <span class="detail__stat-value" data-field="volume">30 ml</span>
+            </div>
+            <div class="detail__stat">
+              <span class="detail__stat-label">Served</span>
+              <span class="detail__stat-value" data-field="temp">88 °C</span>
+            </div>
+          </div>
+          <div class="detail__purchase">
+            <p class="detail__price">
+              <span class="detail__price-amount">$5</span>
+              <span class="detail__price-note">per cup</span>
+            </p>
+            <button class="detail__cta" type="button">
+              <span>Add to order</span>
+              <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                <path d="M4 12h15M13 6l6 6-6 6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" />
+              </svg>
+            </button>
+          </div>
+          <p class="sr-only" role="status" aria-live="polite"></p>
+        </div>
+
+        <div class="detail__art" aria-hidden="true">
+          <span class="detail__ghost">01</span>
+          <span class="detail__glow"></span>
+          <div class="detail__stage"></div>
+          <p class="detail__art-caption">Brewed for the bold</p>
+        </div>
+      </div>
+    </div>
+  </dialog>
 </body>
 </html>
