@@ -165,9 +165,10 @@
   });
 
   /* --------------------- Favourites and shopping basket ------------------ */
-  /* Every drink carries two chips under its card: a heart for the favourites
-     list and a basket for the order. Tapping them turns the heart red and
-     the basket black, and the choice is remembered for the next visit. */
+  /* Every drink carries two flat-icon chips on its card: a heart in the
+     top-left corner for the favourites list and a shopping bag in the
+     bottom-right corner for the order. Tapping them turns the heart red and
+     the bag black, and the choice is remembered for the next visit. */
   const actionButtons = Array.from(document.querySelectorAll('.item__action'));
   const liveStatus = document.getElementById('action-status');
   const STORAGE_KEY = 'coffee-shop-actions';
@@ -219,10 +220,30 @@
 
   const store = readStore();
 
+  /* The chips are pinned over the card, outside of it, so hovering a chip
+     would not light the card up. On pointer devices the hover (and keyboard
+     focus) of a chip is forwarded to its card as the .is-hovered state the
+     touch flow already uses, giving the same lift and spotlight. */
+  const canHover = window.matchMedia('(hover: hover)');
+
   actionButtons.forEach((button) => {
     const key = keyOf(button);
 
     if (store[key]) setPressed(button, true);
+
+    if (canHover.matches) {
+      const card = itemOf(button);
+      const lightUp = () => card && card.classList.add('is-hovered');
+      const rest = () => {
+        if (!card || button.matches(':hover') || button.matches(':focus-visible')) return;
+        card.classList.remove('is-hovered');
+      };
+
+      button.addEventListener('mouseenter', lightUp);
+      button.addEventListener('mouseleave', rest);
+      button.addEventListener('focus', () => button.matches(':focus-visible') && lightUp());
+      button.addEventListener('blur', rest);
+    }
 
     button.addEventListener('click', () => {
       const pressed = button.getAttribute('aria-pressed') !== 'true';

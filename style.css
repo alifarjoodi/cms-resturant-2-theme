@@ -242,9 +242,11 @@ body {
   transform: scale(1);
 }
 
-/* On pointer devices the other menu items recede to spotlight the active one. */
+/* On pointer devices the other menu items recede to spotlight the active one.
+   .is-hovered is the state app.js mirrors onto a card while the pointer rests
+   on one of its corner chips, which sit outside the card itself. */
 @media (hover: hover) {
-  .menu-grid:has(.item:hover) .item:not(:hover) {
+  .menu-grid:has(.item:is(:hover, .is-hovered)) .item:not(:is(:hover, .is-hovered)) {
     opacity: .6;
     filter: saturate(.65);
   }
@@ -259,21 +261,24 @@ body {
 }
 
 /* --------------------- Favourite and cart chips ------------------------- */
-/* Every drink carries two chips under its card: a heart for the favourites
-   list and a shopping basket for the order. The emoji are kept grey while
-   they are off and are painted by their own state once they are on: the
-   heart turns red, the basket turns black. */
-.item__actions {
+/* Every drink carries two flat-icon chips pinned to its card: a heart in
+   the top-left corner for the favourites list and a shopping bag in the
+   bottom-right corner for the order. The icons stay grey while off and are
+   painted by their own state once they are on: the heart turns red, the
+   bag turns black. */
+.cell {
   position: relative;
-  z-index: 2;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: .9cqw;
-  margin-top: .45cqw;
+}
+
+.item__actions {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  pointer-events: none;
 }
 
 .item__action {
+  position: absolute;
   display: grid;
   width: 2.9cqw;
   height: 2.9cqw;
@@ -281,9 +286,10 @@ body {
   padding: 0;
   border: 1px solid rgb(53 36 27 / 14%);
   border-radius: 50%;
-  background: rgb(255 252 243 / 72%);
+  background: rgb(255 253 247 / 90%);
   color: #9b8b7c;
   cursor: pointer;
+  pointer-events: auto;
   -webkit-tap-highlight-color: transparent;
   touch-action: manipulation;
   transition:
@@ -294,15 +300,22 @@ body {
     box-shadow .3s ease;
 }
 
-.item__emoji {
+.item__action--fav {
+  top: .7cqw;
+  left: .7cqw;
+}
+
+.item__action--cart {
+  bottom: .7cqw;
+  right: .7cqw;
+}
+
+.item__icon {
   display: block;
-  font-size: 1.55cqw;
-  line-height: 1;
-  filter: grayscale(1);
-  transition:
-    color .3s ease,
-    filter .3s ease,
-    transform .4s cubic-bezier(.22, .8, .26, 1);
+  width: 1.6cqw;
+  height: 1.6cqw;
+  fill: currentColor;
+  transition: transform .4s cubic-bezier(.22, .8, .26, 1);
 }
 
 .item__action:hover {
@@ -321,15 +334,14 @@ body {
   outline-offset: .18cqw;
 }
 
-/* Tapped: the heart turns red and the basket turns black. */
+/* Tapped: the heart turns red and the bag turns black. */
 .item__action--fav.is-on {
   border-color: rgb(224 49 39 / 45%);
   background: rgb(255 237 232 / 92%);
   color: #e03127;
 }
 
-.item__action--fav.is-on .item__emoji {
-  filter: none;
+.item__action--fav.is-on .item__icon {
   transform: scale(1.12);
 }
 
@@ -339,13 +351,12 @@ body {
   color: #17130f;
 }
 
-.item__action--cart.is-on .item__emoji {
-  filter: grayscale(1) brightness(0);
+.item__action--cart.is-on .item__icon {
   transform: scale(1.12);
 }
 
 /* A short pop confirms the change. */
-.item__action.is-pop .item__emoji {
+.item__action.is-pop .item__icon {
   animation: item-action-pop .42s cubic-bezier(.22, .8, .26, 1);
 }
 
@@ -356,8 +367,9 @@ body {
 }
 
 /* ---------------------------- CSS coffee art ---------------------------- */
-/* The cup is a touch smaller than in the reference poster so that every
-   drink can carry its favourite/cart chips underneath. */
+/* The cup is a touch smaller than in the reference poster so that the
+   favourite and cart chips can pin to the card's corners without touching
+   it. */
 .cup {
   position: relative;
   flex: 0 0 auto;
@@ -1619,20 +1631,26 @@ body {
     inset: -.3rem -.55rem;
   }
 
-  /* The chips keep their size on small screens (container units would
-     shrink with the viewport). */
-  .item__actions {
-    gap: .6rem;
-    margin-top: .55rem;
-  }
-
+  /* The chips stay pinned to the card corners; the offsets and sizes use rem
+     because container units would shrink with the viewport. */
   .item__action {
     width: 2.45rem;
     height: 2.45rem;
   }
 
-  .item__emoji {
-    font-size: 1.1rem;
+  .item__action--fav {
+    top: .55rem;
+    left: .55rem;
+  }
+
+  .item__action--cart {
+    bottom: .55rem;
+    right: .55rem;
+  }
+
+  .item__icon {
+    width: 1.25rem;
+    height: 1.25rem;
   }
 
   .item__action:hover {
@@ -1808,11 +1826,11 @@ body {
   .price::before,
   .item h2::after,
   .item__action,
-  .item__emoji {
+  .item__icon {
     transition-duration: .01ms !important;
   }
 
-  .item__action.is-pop .item__emoji {
+  .item__action.is-pop .item__icon {
     animation: none;
   }
 
