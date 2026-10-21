@@ -132,6 +132,135 @@
     });
   });
 
+  /* --------------------------- Hover on touch ---------------------------- */
+  /* Touch screens have no pointer to hover with, so the hover role is played
+     by the finger: .is-pressed while it is down and .is-hovered for a
+     moment after the tap, which gives the card the very same highlights
+     the mouse gets on a desktop. */
+  let hoverTimer = 0;
+
+  const releasePress = (item) => item.classList.remove('is-pressed');
+
+  items.forEach((item) => {
+    item.addEventListener('pointerdown', (event) => {
+      if (event.pointerType === 'mouse') return;
+      item.classList.add('is-pressed');
+    });
+
+    item.addEventListener('pointerup', (event) => {
+      if (event.pointerType === 'mouse') return;
+
+      releasePress(item);
+
+      /* Only one card carries the hover state at a time. */
+      items.forEach((other) => other.classList.remove('is-hovered'));
+      item.classList.add('is-hovered');
+
+      window.clearTimeout(hoverTimer);
+      hoverTimer = window.setTimeout(() => item.classList.remove('is-hovered'), 1600);
+    });
+
+    item.addEventListener('pointercancel', () => releasePress(item));
+    item.addEventListener('pointerleave', () => releasePress(item));
+  });
+
+  /* --------------------- Favourites and shopping basket ------------------ */
+  /* Every drink carries two chips under its card: a heart for the favourites
+     list and a basket for the order. Tapping them turns the heart red and
+     the basket black, and the choice is remembered for the next visit. */
+  const actionButtons = Array.from(document.querySelectorAll('.item__action'));
+  const liveStatus = document.getElementById('action-status');
+  const STORAGE_KEY = 'coffee-shop-actions';
+
+  const readStore = () => {
+    try {
+      const parsed = JSON.parse(window.localStorage.getItem(STORAGE_KEY) || '{}');
+      return parsed && typeof parsed === 'object' ? parsed : {};
+    } catch (error) {
+      return {};
+    }
+  };
+
+  const writeStore = (store) => {
+    try {
+      window.localStorage.setItem(STORAGE_KEY, JSON.stringify(store));
+    } catch (error) {
+      /* Storage can be blocked (private mode): the state then only lasts
+         for this session, which is still perfectly usable. */
+    }
+  };
+
+  const itemOf = (button) => {
+    const cell = button.closest('.cell');
+    return cell ? cell.querySelector('.item') : null;
+  };
+
+  const nameOf = (button) => {
+    const item = itemOf(button);
+    return (item && item.dataset.name) || 'Coffee';
+  };
+
+  const keyOf = (button) => `${nameOf(button)}::${button.dataset.action}`;
+
+  const listOf = (button) => (button.dataset.action === 'favorite' ? 'favourites' : 'cart');
+
+  const setPressed = (button, pressed) => {
+    if (!button) return;
+    button.classList.toggle('is-on', pressed);
+    button.setAttribute('aria-pressed', pressed ? 'true' : 'false');
+  };
+
+  const pop = (button) => {
+    if (!button) return;
+    button.classList.remove('is-pop');
+    void button.offsetWidth;
+    button.classList.add('is-pop');
+  };
+
+  const store = readStore();
+
+  actionButtons.forEach((button) => {
+    const key = keyOf(button);
+
+    if (store[key]) setPressed(button, true);
+
+    button.addEventListener('click', () => {
+      const pressed = button.getAttribute('aria-pressed') !== 'true';
+      const name = nameOf(button);
+
+      setPressed(button, pressed);
+      pop(button);
+
+      if (pressed) {
+        store[key] = true;
+      } else {
+        delete store[key];
+      }
+      writeStore(store);
+
+      if (liveStatus) {
+        liveStatus.textContent = pressed
+          ? `${name} added to your ${listOf(button)}.`
+          : `${name} removed from your ${listOf(button)}.`;
+      }
+    });
+  });
+
+  /* Adding a drink from the full screen view fills its basket chip too. */
+  const markInCart = (item) => {
+    if (!item) return;
+
+    const cell = item.closest('.cell');
+    const button = cell ? cell.querySelector('.item__action--cart') : null;
+    if (!button) return;
+
+    setPressed(button, true);
+    pop(button);
+
+    store[keyOf(button)] = true;
+    writeStore(store);
+  };
+
   els.close.addEventListener('click', close);
 
   /* Keep Tab (and Shift+Tab) cycling inside the glass while it is open. */
@@ -191,6 +320,8 @@
     els.cta.classList.add('is-added');
     els.ctaLabel.textContent = 'Added to order';
     els.status.textContent = `${name} added to your order.`;
+
+    markInCart(activeItem);
 
     ctaTimer = window.setTimeout(() => {
       els.cta.classList.remove('is-added');
