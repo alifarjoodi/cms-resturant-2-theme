@@ -55,7 +55,7 @@ body {
 .menu {
   position: relative;
   min-width: 0;
-  padding: 5.3cqw 5cqw 0;
+  padding: 4.8cqw 5cqw 0;
   background: var(--menu-paper);
 }
 
@@ -76,7 +76,7 @@ body {
 }
 
 .menu h1 {
-  margin: 0 0 3.3cqw 5cqw;
+  margin: 0 0 2.8cqw 5cqw;
   color: #3c3029;
   font-size: 4.05cqw;
   font-weight: 500;
@@ -90,8 +90,22 @@ body {
   grid-template-columns: repeat(2, minmax(0, 1fr));
   grid-template-rows: repeat(4, minmax(0, 1fr));
   width: 54.5cqw;
-  height: 106.25cqw;
-  row-gap: 1.8cqw;
+  height: 111cqw;
+  row-gap: 1.6cqw;
+}
+
+/* Every drink lives in a cell: the card on top, its action chips below. */
+.cell {
+  display: flex;
+  min-width: 0;
+  min-height: 0;
+  flex-direction: column;
+  align-items: stretch;
+}
+
+.cell > .item {
+  flex: 1 1 auto;
+  min-height: 0;
 }
 
 .item {
@@ -187,8 +201,10 @@ body {
   outline-offset: -.3cqw;
 }
 
-/* Active card: hovered with a pointer, or reached with the keyboard. */
-.item:is(:hover, :focus-visible) {
+/* Active card: hovered with a pointer, reached with the keyboard, or held
+   on a touch screen (the .is-pressed/.is-hovered classes mirror a hover
+   there, because touch devices have no pointer to hover with). */
+.item:is(:hover, :focus-visible, .is-hovered, .is-pressed) {
   background-color: rgb(255 251 240 / 74%);
   box-shadow: 0 1.4cqw 2.6cqw -1.5cqw rgb(61 42 29 / 58%);
   transform: translateY(-.6cqw);
@@ -197,31 +213,31 @@ body {
 /* The cup settles a touch deeper into the card instead of floating up:
    the tile has almost no top padding, so lifting the artwork would push the
    saucer out over the card's top edge. */
-.item:is(:hover, :focus-visible) .cup {
+.item:is(:hover, :focus-visible, .is-hovered, .is-pressed) .cup {
   filter: drop-shadow(0 .8cqw 1.1cqw rgb(54 36 22 / 20%));
   transform: translateY(.4cqw) scale(1.02) rotate(-1.2deg);
 }
 
-.item:is(:hover, :focus-visible) h2 {
+.item:is(:hover, :focus-visible, .is-hovered, .is-pressed) h2 {
   color: #241108;
   letter-spacing: .06em;
 }
 
-.item:is(:hover, :focus-visible) h2::after {
+.item:is(:hover, :focus-visible, .is-hovered, .is-pressed) h2::after {
   opacity: .7;
   transform: translate(0, 0);
 }
 
-.item:is(:hover, :focus-visible) p {
+.item:is(:hover, :focus-visible, .is-hovered, .is-pressed) p {
   color: #4a3d34;
 }
 
-.item:is(:hover, :focus-visible) .price {
+.item:is(:hover, :focus-visible, .is-hovered, .is-pressed) .price {
   color: #fff6e6;
   letter-spacing: .12em;
 }
 
-.item:is(:hover, :focus-visible) .price::before {
+.item:is(:hover, :focus-visible, .is-hovered, .is-pressed) .price::before {
   opacity: 1;
   transform: scale(1);
 }
@@ -234,12 +250,119 @@ body {
   }
 }
 
+/* On touch devices the same spotlight follows the pressed or tapped card. */
+@media (hover: none) {
+  .menu-grid:has(.item:is(.is-hovered, .is-pressed)) .item:not(:is(.is-hovered, .is-pressed)) {
+    opacity: .6;
+    filter: saturate(.65);
+  }
+}
+
+/* --------------------- Favourite and cart chips ------------------------- */
+/* Every drink carries two chips under its card: a heart for the favourites
+   list and a shopping basket for the order. The emoji are kept grey while
+   they are off and are painted by their own state once they are on: the
+   heart turns red, the basket turns black. */
+.item__actions {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: .9cqw;
+  margin-top: .45cqw;
+}
+
+.item__action {
+  display: grid;
+  width: 2.9cqw;
+  height: 2.9cqw;
+  place-items: center;
+  padding: 0;
+  border: 1px solid rgb(53 36 27 / 14%);
+  border-radius: 50%;
+  background: rgb(255 252 243 / 72%);
+  color: #9b8b7c;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+  transition:
+    background-color .3s ease,
+    border-color .3s ease,
+    color .3s ease,
+    transform .3s cubic-bezier(.22, .8, .26, 1),
+    box-shadow .3s ease;
+}
+
+.item__emoji {
+  display: block;
+  font-size: 1.55cqw;
+  line-height: 1;
+  filter: grayscale(1);
+  transition:
+    color .3s ease,
+    filter .3s ease,
+    transform .4s cubic-bezier(.22, .8, .26, 1);
+}
+
+.item__action:hover {
+  border-color: rgb(53 36 27 / 26%);
+  background: rgb(255 253 247 / 95%);
+  box-shadow: 0 .5cqw 1cqw -.45cqw rgb(61 42 29 / 45%);
+  transform: translateY(-.25cqw);
+}
+
+.item__action:active {
+  transform: translateY(0) scale(.94);
+}
+
+.item__action:focus-visible {
+  outline: .2cqw solid #8a5b35;
+  outline-offset: .18cqw;
+}
+
+/* Tapped: the heart turns red and the basket turns black. */
+.item__action--fav.is-on {
+  border-color: rgb(224 49 39 / 45%);
+  background: rgb(255 237 232 / 92%);
+  color: #e03127;
+}
+
+.item__action--fav.is-on .item__emoji {
+  filter: none;
+  transform: scale(1.12);
+}
+
+.item__action--cart.is-on {
+  border-color: rgb(23 19 15 / 50%);
+  background: rgb(255 253 247 / 96%);
+  color: #17130f;
+}
+
+.item__action--cart.is-on .item__emoji {
+  filter: grayscale(1) brightness(0);
+  transform: scale(1.12);
+}
+
+/* A short pop confirms the change. */
+.item__action.is-pop .item__emoji {
+  animation: item-action-pop .42s cubic-bezier(.22, .8, .26, 1);
+}
+
+@keyframes item-action-pop {
+  0% { transform: scale(1); }
+  40% { transform: scale(1.3); }
+  100% { transform: scale(1); }
+}
+
 /* ---------------------------- CSS coffee art ---------------------------- */
+/* The cup is a touch smaller than in the reference poster so that every
+   drink can carry its favourite/cart chips underneath. */
 .cup {
   position: relative;
   flex: 0 0 auto;
-  width: 14.6cqw;
-  height: 14.6cqw;
+  width: 12.6cqw;
+  height: 12.6cqw;
   transition: transform .55s cubic-bezier(.22, .8, .26, 1), filter .4s ease;
 }
 
@@ -256,8 +379,8 @@ body {
       #fffaf1 58% 72%,
       #bfb5a8 73% 100%);
   box-shadow:
-    0 .45cqw 1.3cqw rgb(70 52 36 / 22%),
-    inset 0 0 0 .7cqw rgb(255 255 255 / 42%);
+    0 .39cqw 1.12cqw rgb(70 52 36 / 22%),
+    inset 0 0 0 .6cqw rgb(255 255 255 / 42%);
 }
 
 .cup .mug,
@@ -268,8 +391,8 @@ body {
   border-radius: 50%;
   background: linear-gradient(145deg, #fffefa, #f6f1e7);
   box-shadow:
-    0 .45cqw 1cqw rgb(61 42 29 / 26%),
-    inset 0 -.7cqw 1.2cqw rgb(61 42 29 / 9%);
+    0 .39cqw .86cqw rgb(61 42 29 / 26%),
+    inset 0 -.6cqw 1.04cqw rgb(61 42 29 / 9%);
 }
 
 /* The handle sits behind the cup but above the saucer. */
@@ -284,7 +407,7 @@ body {
   border-radius: 0 999px 999px 0;
   content: "";
   transform: translateY(-50%);
-  filter: drop-shadow(.35cqw .35cqw .45cqw rgb(54 36 22 / 22%));
+  filter: drop-shadow(.3cqw .3cqw .39cqw rgb(54 36 22 / 22%));
 }
 
 .cup .mug {
@@ -295,7 +418,7 @@ body {
   right: -17%;
   width: 29%;
   height: 34%;
-  border-width: .95cqw;
+  border-width: .82cqw;
 }
 
 .cup .coffee,
@@ -307,8 +430,8 @@ body {
   border-radius: 50%;
   background: radial-gradient(circle at 38% 34%, #764a2b, #432718 62%, #26150d);
   box-shadow:
-    inset 0 .75cqw 1.4cqw rgb(0 0 0 / 43%),
-    inset 0 0 0 .75cqw rgb(177 124 68 / 43%);
+    inset 0 .65cqw 1.21cqw rgb(0 0 0 / 43%),
+    inset 0 0 0 .65cqw rgb(177 124 68 / 43%);
 }
 
 .cup--espresso .coffee {
@@ -343,7 +466,7 @@ body {
   background:
     radial-gradient(circle at 50% 46%, transparent 0 32%, rgb(111 68 34 / 54%) 34% 37%, transparent 40%),
     radial-gradient(circle at 45% 40%, #fffdf3, #f2e8d6 75%, #dfceb1);
-  box-shadow: inset 0 0 0 .55cqw rgb(108 66 36 / 24%);
+  box-shadow: inset 0 0 0 .47cqw rgb(108 66 36 / 24%);
 }
 
 .foam::after {
@@ -366,11 +489,11 @@ body {
   position: absolute;
   top: 50%;
   left: 50%;
-  width: 5.1cqw;
-  height: 5.1cqw;
+  width: 4.4cqw;
+  height: 4.4cqw;
   border-radius: 16%;
   background: #fff8e9;
-  box-shadow: 0 0 0 .8cqw rgb(255 248 233 / 25%);
+  box-shadow: 0 0 0 .69cqw rgb(255 248 233 / 25%);
   transform: translate(-50%, -50%) rotate(45deg) scale(.72);
 }
 
@@ -1399,8 +1522,17 @@ body {
     gap: .65rem;
   }
 
-  /* Each drink becomes a compact row: cup · name + description · price. */
-  .item {
+  /* Each drink becomes a compact row: cup · name + description · price.
+     The cell carries the card surface so the chips can live under it. */
+  .cell {
+    display: block;
+    padding: clamp(.7rem, 3vw, .95rem) clamp(.7rem, 3vw, .95rem) clamp(.5rem, 2.2vw, .65rem);
+    border-radius: 1rem;
+    background-color: rgb(255 251 240 / 55%);
+    transition: background-color .4s ease, box-shadow .4s ease, transform .4s ease;
+  }
+
+  .cell > .item {
     display: grid;
     width: 100%;
     grid-template-columns: auto minmax(0, 1fr) auto;
@@ -1411,24 +1543,32 @@ body {
     align-items: center;
     column-gap: clamp(.65rem, 2.6vw, 1rem);
     row-gap: .15rem;
-    padding: clamp(.7rem, 3vw, .95rem);
-    border-radius: 1rem;
-    background-color: rgb(255 251 240 / 55%);
+    padding: 0;
+    border-radius: 0;
+    background-color: transparent;
     text-align: left;
   }
 
-  .item:is(:hover, :focus-visible) {
-    background-color: rgb(255 251 240 / 84%);
-    box-shadow: 0 1rem 1.6rem -1.1rem rgb(61 42 29 / 38%);
+  /* The card itself stays transparent: the cell paints and lifts it. */
+  .cell > .item:is(:hover, :focus-visible, .is-hovered, .is-pressed) {
+    background-color: transparent;
+    box-shadow: none;
+    transform: none;
   }
 
-  .item:focus-visible {
+  .cell:has(.item:is(:hover, :focus-visible, .is-hovered, .is-pressed)) {
+    background-color: rgb(255 251 240 / 84%);
+    box-shadow: 0 1rem 1.6rem -1.1rem rgb(61 42 29 / 38%);
+    transform: translateY(-2px);
+  }
+
+  .cell > .item:focus-visible {
     outline: 2px solid #8a5b35;
     outline-offset: 2px;
   }
 
   /* Touch has no hover, so a short press still confirms the card. */
-  .item:active {
+  .cell:has(.item:active) {
     background-color: rgb(255 251 240 / 92%);
     transform: scale(.992);
   }
@@ -1449,9 +1589,10 @@ body {
     white-space: normal;
   }
 
-  /* No pointer hover here, so the little "open" arrow stays out of the way. */
+  /* The little "open" arrow stays out of the way until the card is active. */
   .item h2::after {
-    display: none;
+    margin-left: .3em;
+    font-size: .78em;
   }
 
   .item p {
@@ -1476,6 +1617,31 @@ body {
 
   .price::before {
     inset: -.3rem -.55rem;
+  }
+
+  /* The chips keep their size on small screens (container units would
+     shrink with the viewport). */
+  .item__actions {
+    gap: .6rem;
+    margin-top: .55rem;
+  }
+
+  .item__action {
+    width: 2.45rem;
+    height: 2.45rem;
+  }
+
+  .item__emoji {
+    font-size: 1.1rem;
+  }
+
+  .item__action:hover {
+    transform: none;
+  }
+
+  .item__action:focus-visible {
+    outline: 2px solid #8a5b35;
+    outline-offset: 2px;
   }
 
   .brand__foot {
@@ -1634,13 +1800,20 @@ body {
 /* --------------------------- Reduced motion ----------------------------- */
 @media (prefers-reduced-motion: reduce) {
   .item,
+  .cell,
   .cup,
   .item h2,
   .item p,
   .price,
   .price::before,
-  .item h2::after {
+  .item h2::after,
+  .item__action,
+  .item__emoji {
     transition-duration: .01ms !important;
+  }
+
+  .item__action.is-pop .item__emoji {
+    animation: none;
   }
 
   .detail[open] .detail__glass {
