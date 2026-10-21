@@ -284,30 +284,28 @@ body {
   height: 2.9cqw;
   place-items: center;
   padding: 0;
-  border: 1px solid rgb(53 36 27 / 14%);
+  border: 0;
   border-radius: 50%;
-  background: rgb(255 253 247 / 90%);
+  background: transparent;
   color: #9b8b7c;
   cursor: pointer;
   pointer-events: auto;
   -webkit-tap-highlight-color: transparent;
   touch-action: manipulation;
   transition:
-    background-color .3s ease,
-    border-color .3s ease,
     color .3s ease,
-    transform .3s cubic-bezier(.22, .8, .26, 1),
-    box-shadow .3s ease;
+    transform .3s cubic-bezier(.22, .8, .26, 1);
 }
 
+/* Keep the controls tucked toward the card edges, clear of the drink artwork. */
 .item__action--fav {
-  top: .7cqw;
-  left: .7cqw;
+  top: .15cqw;
+  left: .15cqw;
 }
 
 .item__action--cart {
-  bottom: .7cqw;
-  right: .7cqw;
+  bottom: .15cqw;
+  right: .15cqw;
 }
 
 .item__icon {
@@ -315,18 +313,19 @@ body {
   width: 1.6cqw;
   height: 1.6cqw;
   fill: currentColor;
-  transition: transform .4s cubic-bezier(.22, .8, .26, 1);
+  transition: transform .4s cubic-bezier(.22, .8, .26, 1), color .3s ease;
 }
 
 .item__action:hover {
-  border-color: rgb(53 36 27 / 26%);
-  background: rgb(255 253 247 / 95%);
-  box-shadow: 0 .5cqw 1cqw -.45cqw rgb(61 42 29 / 45%);
-  transform: translateY(-.25cqw);
+  color: #6f4328;
+}
+
+.item__action:hover .item__icon {
+  transform: translateY(-.12cqw) scale(1.14);
 }
 
 .item__action:active {
-  transform: translateY(0) scale(.94);
+  transform: scale(.94);
 }
 
 .item__action:focus-visible {
@@ -336,8 +335,7 @@ body {
 
 /* Tapped: the heart turns red and the bag turns black. */
 .item__action--fav.is-on {
-  border-color: rgb(224 49 39 / 45%);
-  background: rgb(255 237 232 / 92%);
+  background: transparent;
   color: #e03127;
 }
 
@@ -346,8 +344,7 @@ body {
 }
 
 .item__action--cart.is-on {
-  border-color: rgb(23 19 15 / 50%);
-  background: rgb(255 253 247 / 96%);
+  background: transparent;
   color: #17130f;
 }
 
@@ -1639,13 +1636,13 @@ body {
   }
 
   .item__action--fav {
-    top: .55rem;
-    left: .55rem;
+    top: .2rem;
+    left: .2rem;
   }
 
   .item__action--cart {
-    bottom: .55rem;
-    right: .55rem;
+    bottom: .2rem;
+    right: .2rem;
   }
 
   .item__icon {
