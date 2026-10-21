@@ -8,7 +8,7 @@ A portrait **Menu & Price List** recreated from the reference using HTML, CSS an
 
 ## Interactions
 
-**Hover a menu item** to lift it off the paper: the tile warms up, a hairline of light draws across the top, the cup floats, the price becomes an ink pill, and the other drinks recede. Keyboard focus produces the same state.
+**Hover a menu item** to lift it off the paper: the tile warms up, the cup floats, the price becomes an ink pill, and the other drinks recede. Keyboard focus produces the same state.
 
 **Click a menu item** and the poster dissolves into a full-screen view of that drink. The right side shows the cup artwork together with the drink's number, type and name; the left side holds its description, tasting notes, intensity, volume, serve temperature, price and the add-to-order button. On narrow screens the artwork stacks above the text. Close with the round button or `Esc`; `Tab` stays inside the view and focus returns to the menu item.
 
@@ -23,4 +23,4 @@ python3 -m http.server 8000
 # then visit http://localhost:8000
 ```
 
-The poster keeps its original two-column composition at every size and scales proportionally to fit the viewport. The detail view is always full-screen; below 900px it becomes a single, scrollable column.
+Above 900px wide (and 800px tall) the poster keeps its original two-column composition and scales proportionally to fit the viewport. Below those sizes it unfolds into a normal scrollable page: the brand panel becomes a header (logo, tagline and the oversized cup) and a footer (description and slogan) around the menu, the menu turns into readable cards — a single column on phones and two on tablets — and every size is fluid with `clamp()` instead of container-relative units. The detail view is always full-screen; below 900px it becomes a single, scrollable column.
