@@ -152,9 +152,8 @@
     </aside>
   </main>
 
-  <!-- Glass detail panel: unfolds from a top view into a side view on the right edge. -->
+  <!-- Full-screen detail view: artwork and drink name on the right, description on the left. -->
   <dialog class="detail" id="item-detail" aria-labelledby="detail-name" aria-describedby="detail-desc">
-    <span class="detail__edge" aria-hidden="true"></span>
     <div class="detail__glass">
       <span class="detail__scan" aria-hidden="true"></span>
 
@@ -168,12 +167,9 @@
       </div>
 
       <div class="detail__body">
+        <!-- Left: the description and the numbers -->
         <div class="detail__info">
-          <p class="detail__eyebrow">
-            <span class="detail__num">N° 01</span>
-            <span class="detail__cat">Espresso bar</span>
-          </p>
-          <h2 class="detail__name" id="detail-name">Espresso</h2>
+          <p class="detail__kicker">About this cup</p>
           <p class="detail__desc" id="detail-desc">A little cup of comfort — a dense, syrupy shot pulled slow for a deep, roasted finish that lingers.</p>
           <ul class="detail__notes" aria-label="Flavor notes"></ul>
           <div class="detail__stats">
@@ -205,11 +201,18 @@
           <p class="sr-only" role="status" aria-live="polite"></p>
         </div>
 
-        <div class="detail__art" aria-hidden="true">
-          <span class="detail__ghost">01</span>
-          <span class="detail__glow"></span>
-          <div class="detail__stage"></div>
-          <p class="detail__art-caption">Brewed for the bold</p>
+        <!-- Right: the artwork plus the drink name and type -->
+        <div class="detail__art">
+          <span class="detail__ghost" aria-hidden="true">01</span>
+          <span class="detail__glow" aria-hidden="true"></span>
+          <div class="detail__stage" aria-hidden="true"></div>
+          <div class="detail__identity">
+            <p class="detail__eyebrow">
+              <span class="detail__num">N° 01</span>
+              <span class="detail__cat">Espresso bar</span>
+            </p>
+            <h2 class="detail__name" id="detail-name">Espresso</h2>
+          </div>
         </div>
       </div>
     </div>
