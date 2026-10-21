@@ -8,7 +8,7 @@ A portrait **Menu & Price List** recreated from the reference using HTML, CSS an
 
 ## Interactions
 
-**Hover a menu item** to lift it off the paper: the tile warms up, the cup floats, the price becomes an ink pill, and the other drinks recede. Keyboard focus produces the same state.
+**Hover a menu item** to lift it off the paper: the tile warms up, the cup settles deeper into the card on a soft shadow, the price becomes an ink pill, and the other drinks recede. Keyboard focus produces the same state. No rule or line is drawn along the top of the tile, and the cup never crosses its edge.
 
 **Click a menu item** and the poster dissolves into a full-screen view of that drink. The right side shows the cup artwork together with the drink's number, type and name; the left side holds its description, tasting notes, intensity, volume, serve temperature, price and the add-to-order button. On narrow screens the artwork stacks above the text. Close with the round button or `Esc`; `Tab` stays inside the view and focus returns to the menu item.
 
