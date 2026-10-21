@@ -604,25 +604,23 @@ body {
   transform-origin: left center;
 }
 
-/* ------------------------ Detail glass panel ---------------------------- */
-/* The panel is docked to the right edge and folds up from a top view into
-   a side-on sheet of glass, revealing the drink details on its left. */
+/* ------------------------- Fullscreen detail view ----------------------- */
+/* Clicking any drink opens a full-screen view: the artwork and the drink
+   name/type sit on the right, the description and stats on the left. */
 .detail {
   position: fixed;
   inset: 0;
-  width: min(76vw, 920px);
-  height: min(84vh, 740px);
-  height: min(84svh, 740px);
-  max-width: calc(100vw - 2.4rem);
-  max-height: calc(100svh - 2.4rem);
-  margin: auto max(14px, 2vw) auto auto;
+  width: 100%;
+  height: 100%;
+  height: 100dvh;
+  max-width: none;
+  max-height: none;
+  margin: 0;
   padding: 0;
   border: 0;
-  overflow: visible;
+  overflow: hidden;
   background: transparent;
   color: #f8edda;
-  perspective: 1600px;
-  perspective-origin: 50% 42%;
   pointer-events: none;
 }
 
@@ -631,65 +629,50 @@ body {
 }
 
 .detail::backdrop {
-  background:
-    radial-gradient(ellipse 90% 80% at 82% 46%, rgb(41 24 14 / 30%), transparent 66%),
-    rgb(20 12 7 / 56%);
-  -webkit-backdrop-filter: blur(9px) saturate(.85);
-  backdrop-filter: blur(9px) saturate(.85);
+  background: rgb(16 9 4 / 90%);
 }
 
 .detail[open]::backdrop {
-  animation: detail-backdrop-in .8s cubic-bezier(.2, .7, .2, 1) both;
+  animation: detail-backdrop-in .5s ease both;
 }
 
 .detail.is-closing::backdrop {
-  animation: detail-backdrop-out .5s ease both;
+  animation: detail-backdrop-out .34s ease both;
 }
 
-/* --------------------------- The glass sheet ---------------------------- */
+/* --------------------------- The full screen ---------------------------- */
 .detail__glass {
   position: absolute;
   inset: 0;
   overflow: hidden;
   container-type: inline-size;
-  border: 1px solid rgb(255 243 224 / 17%);
-  border-radius: 22px;
   background:
-    linear-gradient(118deg,
-      rgb(255 255 255 / 12%) 0%,
-      rgb(255 255 255 / 2%) 34%,
-      rgb(255 255 255 / 0%) 58%,
-      rgb(255 255 255 / 7%) 100%),
-    radial-gradient(90% 62% at 84% 10%, rgb(214 156 88 / 20%), transparent 62%),
-    radial-gradient(80% 70% at 14% 98%, rgb(24 12 6 / 34%), transparent 70%),
-    rgb(35 22 14 / 58%);
+    radial-gradient(90% 70% at 78% 18%, rgb(208 145 84 / 24%), transparent 62%),
+    radial-gradient(80% 80% at 6% 98%, rgb(11 6 3 / 55%), transparent 70%),
+    radial-gradient(60% 60% at 50% 52%, rgb(120 74 40 / 14%), transparent 72%),
+    linear-gradient(158deg, #2f1e13 0%, #23150d 46%, #150d08 100%);
   box-shadow:
-    inset 0 1px 0 rgb(255 255 255 / 28%),
-    inset 1px 0 0 rgb(255 255 255 / 8%),
-    inset 0 -1px 0 rgb(255 255 255 / 6%),
-    inset 0 0 90px rgb(15 8 4 / 30%),
-    0 36px 80px -28px rgb(10 5 3 / 70%);
-  -webkit-backdrop-filter: blur(22px) saturate(1.15) brightness(.92);
-  backdrop-filter: blur(22px) saturate(1.15) brightness(.92);
+    inset 0 1px 0 rgb(255 255 255 / 12%),
+    inset 0 0 180px rgb(0 0 0 / 42%);
   transform-origin: 50% 50%;
   will-change: transform, opacity;
 }
 
-/* Curved rim light across the top plus diagonal reflections on the glass. */
+/* Warm light spilling from the art side plus the glassy diagonal sweep. */
 .detail__glass::before {
   position: absolute;
   z-index: 1;
   inset: 0;
   background:
-    radial-gradient(120% 16% at 50% 0%, rgb(255 255 255 / 12%), transparent 64%),
+    radial-gradient(120% 26% at 50% 0%, rgb(255 255 255 / 7%), transparent 66%),
     linear-gradient(115deg,
-      transparent 0 21%,
-      rgb(255 255 255 / 9%) 23%,
-      transparent 31%),
+      transparent 0 28%,
+      rgb(255 255 255 / 4%) 30%,
+      transparent 38%),
     linear-gradient(115deg,
-      transparent 0 56%,
-      rgb(255 255 255 / 5%) 58%,
-      transparent 65%);
+      transparent 0 62%,
+      rgb(255 255 255 / 3%) 64%,
+      transparent 71%);
   content: "";
   pointer-events: none;
 }
@@ -707,60 +690,29 @@ body {
 }
 
 .detail[open] .detail__glass {
-  animation: detail-fold-in .95s cubic-bezier(.2, .75, .2, 1) both;
+  animation: detail-screen-in .7s cubic-bezier(.2, .75, .2, 1) both;
 }
 
 .detail.is-closing .detail__glass {
-  animation: detail-fold-out .56s cubic-bezier(.5, .05, .75, .4) both;
+  animation: detail-screen-out .38s cubic-bezier(.4, 0, .75, .3) both;
 }
 
-/* Light bar that sweeps across the glass while it unfolds. */
+/* Light bar that sweeps across the screen as it opens. */
 .detail__scan {
   position: absolute;
   z-index: 1;
   top: -20%;
   bottom: -20%;
-  left: -55%;
-  width: 38%;
-  background: linear-gradient(90deg, transparent, rgb(255 246 228 / 17%), transparent);
+  left: -45%;
+  width: 28%;
+  background: linear-gradient(90deg, transparent, rgb(255 246 228 / 9%), transparent);
   opacity: 0;
   pointer-events: none;
   transform: skewX(-18deg);
 }
 
 .detail[open] .detail__scan {
-  animation: detail-scan 1.4s .22s ease-out both;
-}
-
-/* The thin lit edge that reads as the side thickness of the glass. */
-.detail__edge {
-  position: absolute;
-  z-index: 3;
-  top: 7%;
-  right: -5px;
-  bottom: 7%;
-  width: 12px;
-  border-radius: 999px;
-  background: linear-gradient(90deg,
-    rgb(255 248 235 / 26%),
-    rgb(255 246 228 / 9%) 42%,
-    rgb(255 242 222 / 22%) 100%);
-  box-shadow:
-    inset 1px 0 1px rgb(255 255 255 / 38%),
-    2px 0 10px rgb(0 0 0 / 18%),
-    0 0 18px rgb(255 226 178 / 12%);
-  opacity: 0;
-  pointer-events: none;
-  -webkit-mask-image: linear-gradient(180deg, transparent, #000 7% 93%, transparent);
-  mask-image: linear-gradient(180deg, transparent, #000 7% 93%, transparent);
-}
-
-.detail[open] .detail__edge {
-  animation: detail-edge-in .7s .48s cubic-bezier(.2, .7, .2, 1) both;
-}
-
-.detail.is-closing .detail__edge {
-  animation: detail-edge-out .25s ease both;
+  animation: detail-scan 1.5s .18s ease-out both;
 }
 
 /* ------------------------------- Top bar -------------------------------- */
@@ -773,14 +725,25 @@ body {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 2.3cqw 2.3cqw 0 4.2cqw;
+  padding: clamp(1.05rem, 3.4vh, 2rem) clamp(1.1rem, 4.2vw, 3.4rem);
+  pointer-events: none;
+}
+
+/* Soft scrim so the brand line and the close button stay readable while the
+   content scrolls underneath them. */
+.detail__topbar::after {
+  position: absolute;
+  z-index: -1;
+  inset: -1px 0 -2.4rem;
+  background: linear-gradient(180deg, rgb(23 13 7 / 94%) 34%, rgb(23 13 7 / 0%));
+  content: "";
   pointer-events: none;
 }
 
 .detail__brand {
   margin: 0;
   color: rgb(246 228 201 / .6);
-  font-size: clamp(.58rem, 1cqw, .78rem);
+  font-size: clamp(.6rem, .78vw, .8rem);
   font-weight: 700;
   letter-spacing: .34em;
   text-transform: uppercase;
@@ -792,13 +755,13 @@ body {
 
 .detail__close {
   display: grid;
-  width: clamp(34px, 3.4cqw, 44px);
-  height: clamp(34px, 3.4cqw, 44px);
+  width: clamp(38px, 3vw, 48px);
+  height: clamp(38px, 3vw, 48px);
   place-items: center;
   padding: 0;
   border: 1px solid rgb(255 244 224 / 20%);
   border-radius: 50%;
-  background: rgb(255 255 255 / 5%);
+  background: rgb(255 255 255 / 6%);
   color: #f9edda;
   cursor: pointer;
   pointer-events: auto;
@@ -824,14 +787,16 @@ body {
 }
 
 /* ------------------------------ Layout ---------------------------------- */
+/* Text column on the left, artwork + name column on the right. */
 .detail__body {
   position: relative;
   z-index: 2;
   display: grid;
-  grid-template-columns: minmax(0, 1.04fr) minmax(0, .96fr);
-  gap: 1cqw;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.04fr);
+  align-items: stretch;
+  gap: clamp(1.6rem, 3.6vw, 4.5rem);
   height: 100%;
-  padding: 6.6cqw 3cqw 3cqw 4.2cqw;
+  padding: clamp(4.2rem, 12vh, 7rem) clamp(1.3rem, 5vw, 5.5rem) clamp(1.4rem, 4vh, 3rem);
   overflow-y: auto;
   overscroll-behavior: contain;
   scrollbar-width: none;
@@ -841,88 +806,70 @@ body {
   display: none;
 }
 
-/* Details live on the left side of the glass. */
+/* --------------------------- Description side --------------------------- */
 .detail__info {
   display: flex;
+  width: 100%;
+  max-width: 34rem;
   min-width: 0;
   flex-direction: column;
   align-items: flex-start;
+  justify-self: center;
   justify-content: center;
   justify-content: safe center;
-  gap: 1.1cqw;
-  padding-right: 1cqw;
+  gap: clamp(.85rem, 2.2vh, 1.5rem);
+  padding-block: .5rem;
 }
 
 .detail[open] .detail__info > * {
   animation: detail-rise .72s cubic-bezier(.2, .7, .2, 1) both;
 }
 
-.detail__info > *:nth-child(1) { animation-delay: .38s; }
-.detail__info > *:nth-child(2) { animation-delay: .43s; }
-.detail__info > *:nth-child(3) { animation-delay: .49s; }
-.detail__info > *:nth-child(4) { animation-delay: .55s; }
-.detail__info > *:nth-child(5) { animation-delay: .61s; }
-.detail__info > *:nth-child(6) { animation-delay: .67s; }
-.detail__info > *:nth-child(7) { animation-delay: .7s; }
+.detail__info > *:nth-child(1) { animation-delay: .22s; }
+.detail__info > *:nth-child(2) { animation-delay: .28s; }
+.detail__info > *:nth-child(3) { animation-delay: .34s; }
+.detail__info > *:nth-child(4) { animation-delay: .4s; }
+.detail__info > *:nth-child(5) { animation-delay: .46s; }
+.detail__info > *:nth-child(6) { animation-delay: .52s; }
 
 .detail.is-closing .detail__info > * {
   animation: detail-fade-out .2s ease both;
 }
 
-.detail__eyebrow {
+.detail__kicker {
   display: flex;
+  width: 100%;
   align-items: center;
-  gap: .8cqw;
-  margin: 0 0 .1cqw;
-  color: rgb(244 224 195 / .62);
-  font-size: clamp(.6rem, .98cqw, .78rem);
+  gap: .9rem;
+  margin: 0;
+  color: #e6bd8a;
+  font-size: clamp(.6rem, .8vw, .78rem);
   font-weight: 700;
-  letter-spacing: .24em;
+  letter-spacing: .34em;
   text-transform: uppercase;
 }
 
-.detail__num {
-  color: #e6bd8a;
-}
-
-.detail__cat {
-  display: inline-flex;
-  align-items: center;
-  gap: .55cqw;
-}
-
-.detail__cat::before {
-  width: clamp(3px, .28cqw, 5px);
-  height: clamp(3px, .28cqw, 5px);
-  border-radius: 50%;
-  background: rgb(230 189 138 / .65);
+.detail__kicker::after {
+  flex: 0 1 7rem;
+  height: 1px;
+  background: linear-gradient(90deg, rgb(230 189 138 / 42%), transparent);
   content: "";
 }
 
-.detail__name {
-  margin: -.15cqw 0 0;
-  color: #fff7e9;
-  font-size: clamp(2.1rem, 6.1cqw, 4.1rem);
-  font-weight: 700;
-  line-height: .96;
-  letter-spacing: -.025em;
-  text-wrap: balance;
-  text-shadow: 0 .2cqw 1.4cqw rgb(0 0 0 / 32%);
-}
-
 .detail__desc {
-  max-width: 33cqw;
+  max-width: 32rem;
   margin: 0;
-  color: rgb(243 228 208 / .76);
-  font-size: clamp(.82rem, 1.55cqw, 1rem);
-  line-height: 1.62;
+  color: rgb(243 228 208 / .82);
+  font-size: clamp(1rem, 1.24vw, 1.22rem);
+  line-height: 1.74;
+  text-wrap: pretty;
 }
 
 .detail__notes {
   display: flex;
   flex-wrap: wrap;
-  gap: .5cqw .5cqw;
-  margin: .1cqw 0 0;
+  gap: .5rem;
+  margin: .15rem 0 0;
   padding: 0;
   list-style: none;
 }
@@ -930,36 +877,36 @@ body {
 .detail__notes li {
   display: inline-flex;
   align-items: center;
-  gap: .55cqw;
-  padding: .45cqw .85cqw;
-  border: 1px solid rgb(255 240 219 / 13%);
+  gap: .55rem;
+  padding: .52rem 1rem;
+  border: 1px solid rgb(255 240 219 / 14%);
   border-radius: 99px;
   background: rgb(255 246 230 / 5%);
-  color: rgb(248 233 211 / .8);
-  font-size: clamp(.58rem, .92cqw, .76rem);
+  color: rgb(248 233 211 / .82);
+  font-size: clamp(.58rem, .76vw, .74rem);
   font-weight: 700;
-  letter-spacing: .13em;
+  letter-spacing: .14em;
   text-transform: uppercase;
   white-space: nowrap;
 }
 
 .detail__notes li::before {
-  width: clamp(3px, .28cqw, 5px);
-  height: clamp(3px, .28cqw, 5px);
+  width: 5px;
+  height: 5px;
   border-radius: 50%;
   background: #daa66b;
-  box-shadow: 0 0 .45cqw rgb(218 166 107 / 85%);
+  box-shadow: 0 0 .45rem rgb(218 166 107 / 85%);
   content: "";
 }
 
 .detail__stats {
   display: grid;
   width: 100%;
-  max-width: 34cqw;
+  max-width: 32rem;
   grid-template-columns: 1.35fr .9fr .9fr;
-  gap: 1.4cqw;
-  margin-top: .25cqw;
-  padding-top: 1.2cqw;
+  gap: clamp(1rem, 2.4vw, 2.2rem);
+  margin-top: .35rem;
+  padding-top: clamp(1rem, 2.4vh, 1.5rem);
   border-top: 1px solid rgb(255 240 220 / 12%);
 }
 
@@ -967,12 +914,12 @@ body {
   display: flex;
   min-width: 0;
   flex-direction: column;
-  gap: .45cqw;
+  gap: .5rem;
 }
 
 .detail__stat-label {
   color: rgb(241 219 190 / .48);
-  font-size: clamp(.54rem, .82cqw, .68rem);
+  font-size: clamp(.54rem, .68vw, .68rem);
   font-weight: 700;
   letter-spacing: .2em;
   text-transform: uppercase;
@@ -980,7 +927,7 @@ body {
 
 .detail__stat-value {
   color: #f7ead5;
-  font-size: clamp(.78rem, 1.25cqw, .95rem);
+  font-size: clamp(.8rem, .95vw, 1rem);
   font-weight: 700;
   letter-spacing: .02em;
   white-space: nowrap;
@@ -988,14 +935,14 @@ body {
 
 .detail__dots {
   display: flex;
-  height: clamp(.8rem, 1.25cqw, .95rem);
+  height: clamp(.8rem, 1vw, .95rem);
   align-items: center;
-  gap: clamp(3px, .38cqw, 6px);
+  gap: clamp(3px, .32vw, 6px);
 }
 
 .detail__dots .dot {
-  width: clamp(4px, .5cqw, 7px);
-  height: clamp(4px, .5cqw, 7px);
+  width: clamp(4px, .42vw, 7px);
+  height: clamp(4px, .42vw, 7px);
   border-radius: 50%;
   background: rgb(244 226 200 / 18%);
   box-shadow: inset 0 0 0 1px rgb(255 255 255 / 8%);
@@ -1003,32 +950,29 @@ body {
 
 .detail__dots .dot.is-on {
   background: linear-gradient(180deg, #f4d7a5, #c98c4d);
-  box-shadow: 0 0 clamp(3px, .5cqw, 7px) rgb(230 168 96 / 55%);
+  box-shadow: 0 0 clamp(3px, .4vw, 7px) rgb(230 168 96 / 55%);
 }
 
 .detail__purchase {
   display: flex;
   width: 100%;
-  max-width: 34cqw;
+  max-width: 32rem;
+  flex-wrap: wrap;
   align-items: center;
-  gap: 1.2cqw;
-  margin-top: .55cqw;
-}
-
-.detail__purchase > * {
-  flex-shrink: 0;
+  gap: clamp(.8rem, 1.6vw, 1.4rem);
+  margin-top: .5rem;
 }
 
 .detail__price {
   display: flex;
   align-items: baseline;
-  gap: .55cqw;
+  gap: .55rem;
   margin: 0;
 }
 
 .detail__price-amount {
   color: #fff7e8;
-  font-size: clamp(2rem, 4.4cqw, 2.9rem);
+  font-size: clamp(2.2rem, 3.4vw, 3.1rem);
   font-weight: 800;
   line-height: 1;
   letter-spacing: -.01em;
@@ -1037,7 +981,7 @@ body {
 .detail__price-note {
   color: rgb(242 221 192 / .5);
   white-space: nowrap;
-  font-size: clamp(.56rem, .85cqw, .72rem);
+  font-size: clamp(.56rem, .7vw, .72rem);
   letter-spacing: .18em;
   text-transform: uppercase;
 }
@@ -1047,18 +991,18 @@ body {
   flex: 0 0 auto;
   align-items: center;
   white-space: nowrap;
-  gap: .65cqw;
+  gap: .65rem;
   margin-left: auto;
-  padding: .95cqw 1.5cqw;
+  padding: clamp(.75rem, 1.4vh, 1rem) clamp(1.1rem, 1.7vw, 1.6rem);
   border: 0;
   border-radius: 99px;
   background: linear-gradient(180deg, #fff8ea, #ecdcbe);
   box-shadow:
-    0 .6cqw 1.6cqw -.5cqw rgb(0 0 0 / 55%),
-    inset 0 -.15cqw 0 rgb(163 127 77 / 25%);
+    0 .6rem 1.6rem -.5rem rgb(0 0 0 / 55%),
+    inset 0 -.15rem 0 rgb(163 127 77 / 25%);
   color: #3a2317;
   font-family: inherit;
-  font-size: clamp(.7rem, 1.15cqw, .85rem);
+  font-size: clamp(.72rem, .85vw, .88rem);
   font-weight: 700;
   letter-spacing: .06em;
   cursor: pointer;
@@ -1074,8 +1018,8 @@ body {
 
 .detail__cta:hover {
   box-shadow:
-    0 1cqw 2cqw -.6cqw rgb(0 0 0 / 62%),
-    inset 0 -.15cqw 0 rgb(163 127 77 / 25%);
+    0 1rem 2rem -.6rem rgb(0 0 0 / 62%),
+    inset 0 -.15rem 0 rgb(163 127 77 / 25%);
   transform: translateY(-1px);
 }
 
@@ -1092,17 +1036,22 @@ body {
   transform: none;
 }
 
-/* ------------------------------ Art side -------------------------------- */
+/* ------------------------ Artwork + name side --------------------------- */
 .detail__art {
   position: relative;
-  display: grid;
+  display: flex;
   min-width: 0;
-  place-items: center;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: clamp(.7rem, 2.4vh, 1.8rem);
+  padding-inline: clamp(.5rem, 2vw, 2rem);
+  box-shadow: inset 1px 0 0 rgb(255 242 222 / 10%);
   container-type: inline-size;
 }
 
 .detail[open] .detail__art {
-  animation: detail-art-in .95s .48s cubic-bezier(.2, .7, .2, 1) both;
+  animation: detail-art-in .85s .28s cubic-bezier(.2, .7, .2, 1) both;
 }
 
 .detail.is-closing .detail__art {
@@ -1111,45 +1060,52 @@ body {
 
 .detail__ghost {
   position: absolute;
-  top: 1%;
-  right: 1%;
-  color: rgb(255 244 227 / 4%);
-  font-size: clamp(4.5rem, 20cqw, 9rem);
+  top: 42%;
+  left: 50%;
+  color: transparent;
+  font-size: clamp(8rem, 21vw, 21rem);
   font-weight: 800;
-  line-height: 1;
+  line-height: .8;
   letter-spacing: -.06em;
   pointer-events: none;
   user-select: none;
-  -webkit-text-stroke: 1px rgb(255 242 222 / 13%);
+  -webkit-text-stroke: 1px rgb(255 242 222 / 11%);
+  transform: translate(-50%, -50%);
 }
 
 .detail__glow {
   position: absolute;
-  width: 104%;
+  top: 42%;
+  left: 50%;
+  width: min(72%, 50svh);
   aspect-ratio: 1;
   border-radius: 50%;
   background: radial-gradient(circle,
-    rgb(232 172 98 / 27%),
-    rgb(169 109 54 / 10%) 42%,
-    transparent 68%);
-  filter: blur(2.4cqw);
+    rgb(232 172 98 / 24%),
+    rgb(169 109 54 / 9%) 44%,
+    transparent 70%);
+  filter: blur(1.6vw);
   pointer-events: none;
+  transform: translate(-50%, -50%);
 }
 
 .detail__stage {
   position: relative;
+  z-index: 1;
   display: grid;
-  width: 100%;
+  width: min(100%, 48svh);
+  flex: 0 0 auto;
   aspect-ratio: 1;
   place-items: center;
+  container-type: inline-size;
 }
 
 /* Dashed ring and contact shadow turn the art into a little glass display. */
 .detail__stage::before {
   position: absolute;
   z-index: 0;
-  inset: 4%;
-  border: 1px dashed rgb(255 239 216 / 13%);
+  inset: 1%;
+  border: 1px dashed rgb(255 239 216 / 14%);
   border-radius: 50%;
   content: "";
 }
@@ -1158,36 +1114,123 @@ body {
   position: absolute;
   z-index: 0;
   bottom: 3%;
-  width: 64%;
-  height: 9%;
+  width: 62%;
+  height: 8%;
   border-radius: 50%;
-  background: radial-gradient(ellipse, rgb(8 3 1 / 48%), transparent 70%);
+  background: radial-gradient(ellipse, rgb(8 3 1 / 50%), transparent 70%);
   content: "";
-  filter: blur(.8cqw);
+  filter: blur(.7rem);
 }
 
 .detail__stage .cup {
-  width: 82%;
-  height: 82%;
+  width: 94%;
+  height: 94%;
   z-index: 1;
-  filter: drop-shadow(0 2.2cqw 2.6cqw rgb(0 0 0 / 32%));
+  filter: drop-shadow(0 1.6rem 2rem rgb(0 0 0 / 34%));
+}
+
+/* The stage is the container here, so the cup art is re-scaled to keep the
+   same proportions it has on the menu (cqw = 1% of the stage). */
+.detail__stage .cup .saucer {
+  box-shadow:
+    0 2.7cqw 7.8cqw rgb(70 52 36 / 22%),
+    inset 0 0 0 4.2cqw rgb(255 255 255 / 42%);
+}
+
+.detail__stage .cup .mug {
+  box-shadow:
+    0 2.7cqw 6cqw rgb(61 42 29 / 26%),
+    inset 0 -4.2cqw 7.2cqw rgb(61 42 29 / 9%);
+}
+
+.detail__stage .cup .mug::after {
+  border-width: 5.7cqw;
+  filter: drop-shadow(2.1cqw 2.1cqw 2.7cqw rgb(54 36 22 / 22%));
+}
+
+.detail__stage .cup .coffee {
+  box-shadow:
+    inset 0 4.5cqw 8.4cqw rgb(0 0 0 / 43%),
+    inset 0 0 0 4.5cqw rgb(177 124 68 / 43%);
+}
+
+.detail__stage .cup .foam {
+  box-shadow: inset 0 0 0 3.3cqw rgb(108 66 36 / 24%);
+}
+
+.detail__stage .cup .heart {
+  width: 31cqw;
+  height: 31cqw;
+  box-shadow: 0 0 0 4.8cqw rgb(255 248 233 / 25%);
 }
 
 .detail[open] .detail__stage .cup {
-  animation: detail-cup-float 7s 1.6s ease-in-out infinite;
+  animation: detail-cup-float 7s 1.4s ease-in-out infinite;
 }
 
-.detail__art-caption {
-  position: absolute;
-  right: 2%;
-  bottom: 2%;
+.detail__identity {
+  position: relative;
+  z-index: 2;
+  display: grid;
+  max-width: 100%;
+  justify-items: center;
+  gap: .6rem;
+  text-align: center;
+}
+
+.detail[open] .detail__identity > * {
+  animation: detail-rise .72s .44s cubic-bezier(.2, .7, .2, 1) both;
+}
+
+.detail[open] .detail__identity > *:nth-child(2) {
+  animation-delay: .5s;
+}
+
+.detail.is-closing .detail__identity > * {
+  animation: detail-fade-out .2s ease both;
+}
+
+.detail__eyebrow {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: .8rem;
   margin: 0;
-  color: rgb(246 229 204 / .36);
-  font-size: clamp(.5rem, .7cqw, .62rem);
+  color: rgb(244 224 195 / .64);
+  font-size: clamp(.6rem, .8vw, .78rem);
   font-weight: 700;
-  letter-spacing: .42em;
+  letter-spacing: .24em;
   text-transform: uppercase;
-  writing-mode: vertical-rl;
+}
+
+.detail__num {
+  color: #e6bd8a;
+}
+
+.detail__cat {
+  display: inline-flex;
+  align-items: center;
+  gap: .55rem;
+}
+
+.detail__cat::before {
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: rgb(230 189 138 / .65);
+  content: "";
+}
+
+.detail__name {
+  margin: 0;
+  color: #fff7e9;
+  font-size: clamp(2.2rem, 4.4vw, 4rem);
+  font-weight: 700;
+  line-height: .96;
+  letter-spacing: -.025em;
+  text-align: center;
+  text-wrap: balance;
+  text-shadow: 0 .2rem 1.4rem rgb(0 0 0 / 34%);
 }
 
 /* ------------------------------ Utility --------------------------------- */
@@ -1214,54 +1257,28 @@ body {
   to { opacity: 0; }
 }
 
-@keyframes detail-fold-in {
-  0% {
+@keyframes detail-screen-in {
+  from {
     opacity: 0;
-    border-radius: 50%;
-    box-shadow: 0 0 0 rgb(0 0 0 / 0);
-    filter: brightness(1.38) saturate(.85);
-    transform: translate3d(16%, 12%, -140px) rotateX(88deg) rotateY(-9deg) scale(.74);
+    filter: brightness(1.25) saturate(.86) blur(2px);
+    transform: scale(1.035);
   }
-  16% {
+  to {
     opacity: 1;
-  }
-  55% {
-    border-radius: 9rem;
-    filter: brightness(1.12) saturate(.95);
-    transform: translate3d(5.5%, 4%, -44px) rotateX(38deg) rotateY(-4deg) scale(.9);
-  }
-  82% {
-    border-radius: 26px;
-    filter: brightness(1.02);
-    transform: translate3d(1%, .8%, -6px) rotateX(7deg) rotateY(0deg) scale(.992);
-  }
-  100% {
-    opacity: 1;
-    border-radius: 22px;
-    box-shadow:
-      inset 0 1px 0 rgb(255 255 255 / 28%),
-      inset 1px 0 0 rgb(255 255 255 / 8%),
-      inset 0 -1px 0 rgb(255 255 255 / 6%),
-      inset 0 0 90px rgb(15 8 4 / 30%),
-      0 36px 80px -28px rgb(10 5 3 / 70%);
     filter: none;
-    transform: translate3d(0, 0, 0) rotateX(0) rotateY(0) scale(1);
+    transform: scale(1);
   }
 }
 
-@keyframes detail-fold-out {
-  0% {
-    border-radius: 22px;
-    transform: translate3d(0, 0, 0) rotateX(0) rotateY(0) scale(1);
+@keyframes detail-screen-out {
+  from {
+    opacity: 1;
+    transform: scale(1);
   }
-  30% {
-    border-radius: 8rem;
-    transform: translate3d(4%, 1%, -44px) rotateX(26deg) rotateY(-3deg) scale(.95);
-  }
-  100% {
+  to {
     opacity: 0;
-    border-radius: 50%;
-    transform: translate3d(13%, 10%, -150px) rotateX(90deg) rotateY(-8deg) scale(.76);
+    filter: brightness(1.1);
+    transform: scale(.99);
   }
 }
 
@@ -1275,31 +1292,15 @@ body {
   }
   100% {
     opacity: 0;
-    transform: translateX(360%) skewX(-18deg);
+    transform: translateX(520%) skewX(-18deg);
   }
-}
-
-@keyframes detail-edge-in {
-  from {
-    opacity: 0;
-    transform: translateX(-5px) scaleY(.9);
-  }
-  to {
-    opacity: 1;
-    transform: translateX(0) scaleY(1);
-  }
-}
-
-@keyframes detail-edge-out {
-  from { opacity: 1; }
-  to { opacity: 0; }
 }
 
 @keyframes detail-rise {
   from {
     opacity: 0;
-    filter: blur(.3cqw);
-    transform: translate3d(0, 1.2cqw, 0);
+    filter: blur(6px);
+    transform: translate3d(0, 14px, 0);
   }
   to {
     opacity: 1;
@@ -1316,7 +1317,7 @@ body {
 @keyframes detail-art-in {
   from {
     opacity: 0;
-    transform: translate3d(1.4cqw, 1.6cqw, 0) scale(.9) rotate(2deg);
+    transform: translate3d(18px, 22px, 0) scale(.94) rotate(1.2deg);
   }
   to {
     opacity: 1;
@@ -1330,73 +1331,61 @@ body {
     transform: translateY(0) rotate(-1deg);
   }
   50% {
-    transform: translateY(-1.2cqw) rotate(1deg);
+    transform: translateY(-12px) rotate(1deg);
   }
 }
 
 /* ------------------------------ Responsive ------------------------------ */
-/* Panel sizing: docked to the right edge, smaller on phones. */
-@media (max-width: 700px) {
-  .detail {
-    width: calc(100vw - 1.1rem);
-    height: min(92vh, 780px);
-    height: min(92svh, 780px);
-    max-width: none;
-    max-height: calc(100svh - 1.1rem);
-    margin-right: .5rem;
-    perspective: 1200px;
-  }
-
-  .detail__glass {
-    border-radius: 18px;
-  }
-
-  .detail__topbar {
-    padding: 1rem 1rem 0 1.25rem;
-  }
-
-  .detail__edge {
-    right: -4px;
-    width: 10px;
-  }
-}
-
-/* The glass is the container: when the sheet itself is narrow (phones,
-   portrait tablets) the art stacks above the details. */
-@container (max-width: 620px) {
+/* Narrow screens: the artwork and name stack above the description. */
+@media (max-width: 900px) {
   .detail__body {
-    display: flex;
-    flex-direction: column;
-    justify-content: safe center;
-    gap: 0;
-    padding: 3.4rem 1.35rem 1.3rem;
+    grid-template-columns: minmax(0, 1fr);
+    align-content: start;
+    gap: clamp(1.1rem, 3svh, 1.8rem);
+    padding: clamp(3.8rem, 9vh, 5rem) clamp(1.1rem, 5vw, 2.6rem) clamp(1.6rem, 4vh, 2.6rem);
   }
 
   .detail__art {
-    width: min(58cqw, 220px);
-    flex: 0 0 auto;
-    align-self: center;
     order: -1;
-    margin: .1rem 0 .5rem;
+    gap: clamp(.4rem, 1.6vh, .9rem);
+    padding: 0 0 clamp(.9rem, 2vh, 1.4rem);
+    border-bottom: 1px solid rgb(255 242 222 / 10%);
+    box-shadow: none;
   }
 
-  .detail__art-caption,
+  .detail__stage {
+    width: min(100%, 30svh, 300px);
+  }
+
+  .detail__glow {
+    top: 40%;
+    width: min(64%, 34svh, 320px);
+    filter: blur(18px);
+  }
+
   .detail__ghost {
-    display: none;
+    top: 40%;
+    font-size: clamp(6rem, 28vw, 13rem);
   }
 
-  .detail__info {
-    gap: .72rem;
-    padding: 0;
-    justify-content: flex-start;
+  .detail__identity {
+    gap: .4rem;
   }
 
   .detail__eyebrow {
-    gap: .5rem;
+    gap: .55rem;
   }
 
   .detail__name {
-    font-size: clamp(2rem, 9.2cqw, 2.9rem);
+    font-size: clamp(1.9rem, 7.4vw, 3.1rem);
+  }
+
+  .detail__info {
+    max-width: none;
+    justify-self: stretch;
+    justify-content: flex-start;
+    gap: .85rem;
+    padding-block: 0;
   }
 
   .detail__desc,
@@ -1410,66 +1399,58 @@ body {
   }
 
   .detail__price-amount {
-    font-size: 2rem;
+    font-size: clamp(1.9rem, 8vw, 2.4rem);
   }
 
   .detail__cta {
-    padding: .8rem 1.2rem;
+    padding: .78rem 1.2rem;
   }
 }
 
 /* Short viewports (landscape phones, small laptops): compress the layout. */
-@media (max-height: 620px) and (min-width: 701px) {
+@media (max-height: 640px) and (min-width: 901px) {
   .detail__body {
-    padding-top: 4.4cqw;
-    padding-bottom: 1.6cqw;
+    padding-top: clamp(3.4rem, 14vh, 4.6rem);
+    padding-bottom: 1rem;
   }
 
   .detail__info {
-    gap: .6cqw;
-  }
-
-  .detail__eyebrow {
-    font-size: clamp(.54rem, .8cqw, .68rem);
-  }
-
-  .detail__name {
-    font-size: clamp(1.7rem, 4.1cqw, 2.6rem);
+    gap: .7rem;
   }
 
   .detail__desc {
-    font-size: clamp(.74rem, 1.15cqw, .9rem);
-    line-height: 1.48;
+    font-size: clamp(.85rem, 1vw, 1rem);
+    line-height: 1.58;
   }
 
   .detail__notes li {
-    padding: .28cqw .6cqw;
-    font-size: clamp(.52rem, .78cqw, .68rem);
+    padding: .34rem .7rem;
+    font-size: clamp(.52rem, .66vw, .66rem);
   }
 
   .detail__stats {
-    margin-top: .1cqw;
-    padding-top: .75cqw;
-  }
-
-  .detail__purchase {
-    margin-top: .2cqw;
+    margin-top: .1rem;
+    padding-top: .7rem;
   }
 
   .detail__price-amount {
-    font-size: clamp(1.6rem, 3.3cqw, 2.2rem);
+    font-size: clamp(1.7rem, 2.5vw, 2.2rem);
   }
 
   .detail__cta {
-    padding: .7cqw 1.1cqw;
+    padding: .55rem .95rem;
   }
 
   .detail__stage {
-    width: min(100%, 52vh);
+    width: min(100%, 42svh);
   }
 
-  .detail__art-caption {
-    display: none;
+  .detail__name {
+    font-size: clamp(1.8rem, 3.2vw, 2.8rem);
+  }
+
+  .detail__ghost {
+    font-size: clamp(6rem, 15vw, 13rem);
   }
 }
 
@@ -1488,30 +1469,26 @@ body {
   }
 
   .detail[open] .detail__glass {
-    animation: detail-soft-in .24s ease both;
+    animation: detail-soft-in .22s ease both;
   }
 
   .detail.is-closing .detail__glass {
-    animation: detail-soft-out .22s ease both;
+    animation: detail-soft-out .2s ease both;
   }
 
   .detail[open]::backdrop {
-    animation: detail-soft-in .24s ease both;
+    animation: detail-soft-in .22s ease both;
   }
 
   .detail[open] .detail__info > *,
+  .detail[open] .detail__identity > *,
   .detail[open] .detail__art {
-    animation: detail-soft-in .24s ease both;
+    animation: detail-soft-in .22s ease both;
   }
 
   .detail[open] .detail__scan,
-  .detail[open] .detail__edge,
   .detail[open] .detail__stage .cup {
     animation: none;
-  }
-
-  .detail__edge {
-    opacity: 1;
   }
 }
 

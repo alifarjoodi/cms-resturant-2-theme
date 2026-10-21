@@ -24,6 +24,7 @@
     ctaLabel: dialog.querySelector('.detail__cta > span'),
     status: dialog.querySelector('[role="status"]'),
     close: dialog.querySelector('.detail__close'),
+    body: dialog.querySelector('.detail__body'),
   };
 
   const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
@@ -85,6 +86,9 @@
     els.cta.classList.remove('is-added');
     els.ctaLabel.textContent = 'Add to order';
     els.status.textContent = '';
+
+    /* Every drink opens at the top of the full-screen view. */
+    if (els.body) els.body.scrollTop = 0;
   };
 
   const open = (item) => {
@@ -113,7 +117,7 @@
       () => {
         if (dialog.open) dialog.close();
       },
-      reduceMotion.matches ? 230 : 580,
+      reduceMotion.matches ? 200 : 400,
     );
   };
 
