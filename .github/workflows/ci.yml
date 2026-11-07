@@ -26,9 +26,9 @@ jobs:
         with:
           node-version: 24
           cache: npm
+      - run: npm ci
       - name: Validate Eshobe manifest
         run: npm run validate:manifest
-      - run: npm ci
       - name: Lint
         run: npm run lint
       - name: Typecheck
