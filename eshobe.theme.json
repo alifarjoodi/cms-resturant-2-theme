@@ -1,0 +1,53 @@
+{
+  "contractVersion": 1,
+  "key": "coffee-poster",
+  "name": "Coffee Poster",
+  "nameFa": "پوستر کافه",
+  "siteTypes": ["store", "business", "portfolio"],
+  "locales": ["fa", "en"],
+  "proxiesApi": true,
+  "capabilities": { "commerce": true, "content": true, "forms": true, "search": true },
+  "design": {
+    "primary": "#6f4328",
+    "accent": "#c98c4d",
+    "background": "#fff8e8",
+    "foreground": "#35241b",
+    "radius": "lg",
+    "lineHeight": 1.8
+  },
+  "deployment": { "strategy": "coolify_build" },
+  "build": {
+    "buildPack": "dockerfile",
+    "baseDirectory": "/",
+    "dockerfileLocation": "Dockerfile",
+    "installCommand": null,
+    "buildCommand": null,
+    "startCommand": null,
+    "publishDirectory": null,
+    "port": 3000,
+    "healthCheckPath": "/api/health",
+    "isStatic": false
+  },
+  "env": [
+    {
+      "key": "ESHOBE_RECEIPT_SECRET",
+      "source": "tenant",
+      "required": false,
+      "secret": true,
+      "labelFa": "کلید امضای رسید سفارش",
+      "help": "Operator-only: the same value as the CMS PAYLOAD_SECRET, used only on the server to verify receipt links. Different from ESHOBE_REVALIDATE_SECRET. Without it, orders can be created but private receipt details stay hidden."
+    }
+  ],
+  "settings": {
+    "menuTitle": { "type": "text", "default": "MENU & PRICE LIST", "labelFa": "عنوان منو", "labelEn": "Menu heading", "group": "general" },
+    "tagline": { "type": "text", "default": "BREWED FOR THE BOLD", "labelFa": "شعار کوتاه", "labelEn": "Short tagline", "group": "general" },
+    "brandDescription": { "type": "text", "default": "A perfect cup of coffee, made just for you. Energize your morning and fuel your day with our premium blends.", "labelFa": "توضیح برند", "labelEn": "Brand description", "group": "general" },
+    "slogan": { "type": "text", "default": "BREWED\nFOR COMFORT,\nCRAFTED\nFOR YOU", "labelFa": "شعار چهار خطی؛ هر خط جدا", "labelEn": "Four-line slogan; one line per row", "group": "design" },
+    "menuLimit": { "type": "number", "default": 8, "min": 1, "max": 24, "labelFa": "حداکثر محصول در منو", "labelEn": "Maximum menu products", "group": "design" },
+    "showNavigation": { "type": "boolean", "default": true, "labelFa": "نمایش منوهای سایت", "labelEn": "Show CMS navigation", "group": "design" },
+    "showFavorites": { "type": "boolean", "default": true, "labelFa": "نمایش علاقه‌مندی‌ها", "labelEn": "Show favourites", "group": "design" }
+  },
+  "contentSlots": [
+    { "key": "home", "type": "page", "required": true, "labelFa": "صفحه اصلی", "labelEn": "Home page", "help": "Published home page. Its productGrid block supplies the menu; bind by document, not by a translated slug." }
+  ]
+}

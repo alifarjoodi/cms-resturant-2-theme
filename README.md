@@ -1,30 +1,100 @@
-# Coffee Shop menu poster
+# Coffee Poster — قالب متصل به Eshobe CMS
 
-A portrait **Menu & Price List** recreated from the reference using HTML, CSS and a small amount of vanilla JavaScript. The coffee cups—including the oversized, cropped hero cup—are drawn with CSS gradients and shapes; no image assets are required.
+همان پوستر منوی قهوه، فنجان‌های CSS، نمای تمام‌صفحه، علاقه‌مندی‌ها و چیدمان موبایلِ طرح اصلی؛ اکنون با رندر سمت سرور و اتصال واقعی به قرارداد `THEME_API.md` نسخهٔ ۱. این مخزن یک **قالب مستقل قابل استقرار** است، نه بلوکی برای کپی‌کردن داخل CMS.
 
-- `index.html` — accessible poster structure, eight drinks, brand copy, and the full-screen detail view
-- `style.css` — 4:5 responsive layout, typography, coffee-cup artwork, hover states, favourite/cart chips, and the full-screen reveal
-- `app.js` — fills the full-screen view from the selected menu item, handles open/close, focus, the order button, the touch hover and the favourite/cart chips
+> وضعیت اتصال: کد و آزمون‌های یکپارچه آماده‌اند. در این محیط آدرس CMS، دامنه، کلید سایت و کلیدهای واقعی ارائه نشده‌اند؛ بنابراین پیش‌نمایش زنده عمداً با داده نمونه و پرداخت غیرفعال اجرا می‌شود. اتصال و پرداخت واقعی سایت شما هنوز تأیید نشده است. هیچ سفارش ساختگی در حالت پیش‌نمایش ثبت نمی‌شود.
 
-## Interactions
+## اجرای سریع
 
-**Hover a menu item** to lift it off the paper: the tile warms up, the cup settles deeper into the card on a soft shadow, the price becomes an ink pill, and the other drinks recede. Keyboard focus produces the same state. No rule or line is drawn along the top of the tile, and the cup never crosses its edge.
-
-**On touch screens** there is no pointer to hover with, so the finger plays that role: a press highlights the card exactly like a mouse hover does and the highlight stays for a moment after the tap. The "open" arrow, the ink price pill and the spotlight on the neighbouring drinks all work the same way in the stacked, mobile layout.
-
-**Every drink carries two chips under its card**: a ❤ heart for the favourites list and a 🛒 basket for the order. Tapping the heart turns it red, tapping the basket turns it black, and tapping again undoes it. The choice is remembered in `localStorage`, and the chips are real buttons: they are reachable with `Tab`, work with `Enter`/`Space`, announce their state with `aria-pressed`, and never open the drink's detail view.
-
-**Click a menu item** and the poster dissolves into a full-screen view of that drink. The right side shows the cup artwork together with the drink's number, type and name; the left side holds its description, tasting notes, intensity, volume, serve temperature, price and the add-to-order button. On narrow screens the artwork stacks above the text. Close with the round button or `Esc`; `Tab` stays inside the view and focus returns to the menu item. Adding a drink to the order also fills its basket chip on the poster.
-
-`prefers-reduced-motion` swaps the zoom-in reveal for a plain fade.
-
-## Run
-
-Open `index.html` in a browser, or serve the folder locally:
+Node.js 22 یا جدیدتر لازم است. فایل `index.html` دیگر یک صفحهٔ مستقل برای بازکردن با `file://` نیست؛ پوستهٔ SSR است.
 
 ```bash
-python3 -m http.server 8000
-# then visit http://localhost:8000
+npm ci
+cp .env.example .env
+# برای مشاهدهٔ طرح بدون CMS، فقط در محیط توسعه:
+# DEMO_MODE=true را در .env قرار دهید
+npm start
 ```
 
-Above 900px wide (and 800px tall) the poster keeps its original two-column composition and scales proportionally to fit the viewport. Below those sizes it unfolds into a normal scrollable page: the brand panel becomes a header (logo, tagline and the oversized cup) and a footer (description and slogan) around the menu, the menu turns into readable cards — a single column on phones and two on tablets — and every size is fluid with `clamp()` instead of container-relative units. The detail view is always full-screen; below 900px it becomes a single, scrollable column.
+سرور روی `0.0.0.0:3000` گوش می‌دهد. برای توسعه، `npm run dev` فایل‌ها را زیر نظر می‌گیرد. اگر تنظیمات CMS ناقص باشد و `DEMO_MODE` صریحاً `true` نباشد، صفحهٔ راهنمای تنظیمات نمایش داده می‌شود؛ قالب هرگز خودکار به داده نمونه یا قیمت ساختگی برنمی‌گردد.
+
+## اتصال واقعی سایت
+
+1. در Eshobe این مخزن را به‌عنوان Theme با کلید `coffee-poster` ثبت/همگام‌سازی کنید. فایل فایل `eshobe.theme.json` مانیفست قالب است.
+2. سایت را از نوع `store` بسازید، دامنهٔ عمومی و زبان‌های `fa`/`en` را تنظیم کنید و یک صفحهٔ منتشرشده را با **Theme Binding** به `home` متصل کنید. اتصال با شناسهٔ سند انجام می‌شود، نه حدس‌زدن slug ترجمه‌شده.
+3. در صفحهٔ اصلی بلوک استاندارد `productGrid` بگذارید. محصولات، ترتیب انتخاب‌شده، قیمت، تصویر، گزینه‌ها و موجودی از CMS خوانده می‌شوند. برای ترکیب دقیق پوستر اصلی، ۸ محصول منتشرشده مناسب است؛ تعداد کمتر/بیشتر هم چیدمان منعطف دارد.
+4. نام/لوگو، شعار، توضیح برند و عنوان منو را در تنظیمات سایت/قالب ویرایش کنید. تنظیمات اختصاصی قالب در Manifest تعریف شده‌اند.
+5. کلید سایت و متغیرهای محیطی زیر را از مسیر امن استقرار تزریق کنید. کلیدها را داخل Git، HTML یا JavaScript مرورگر نگذارید.
+
+| متغیر | کاربرد |
+|---|---|
+| `ESHOBE_CMS_URL` | مبدأ مستقیم/داخلی CMS، بدون credential در URL؛ نباید از دامنه‌ای عبور کند که درخواست را دوباره به همین قالب برمی‌گرداند |
+| `ESHOBE_API_KEY` | کلید مخصوص همین سایت برای خواندن محتوای سرور |
+| `ESHOBE_SITE_ID` | UUID سایت؛ پاسخ `/api/site` باید با آن مطابقت داشته باشد |
+| `ESHOBE_SITE_DOMAIN` | دامنهٔ مشتری که استقرار برای آن انجام شده است |
+| `ESHOBE_PUBLIC_ORIGIN` | origin عمومی HTTPS برای canonical، hreflang و sitemap |
+| `ESHOBE_REVALIDATE_SECRET` | کلید webhook؛ برای تأیید HMAC روی بایت‌های خام بدنه |
+| `ESHOBE_RECEIPT_SECRET` | کلید محرمانهٔ رسید؛ باید دقیقاً همان `PAYLOAD_SECRET` خود CMS باشد، نه کلید revalidation |
+| `DEMO_MODE` | در تولید `false`؛ فقط پیش‌نمایش صریح و بدون نوشتن را فعال می‌کند |
+| `CACHE_TTL_SECONDS` | پیش‌فرض ۶۰؛ کش سمت سرور با single-flight، stale-on-error و پاک‌سازی امضاشده |
+| `HOST` / `PORT` | پیش‌فرض `0.0.0.0` / `3000` |
+
+**رسید امن:** اگر `ESHOBE_RECEIPT_SECRET` تنظیم نباشد یا امضای لینک معتبر نباشد، اطلاعات خصوصی سفارش نمایش داده نمی‌شود. ثبت سفارش همچنان از مسیر CMS کار می‌کند. این کلید فقط در سرور قالب استفاده می‌شود و هرگز به مرورگر ارسال نمی‌شود. مقدار آن را اپراتور باید از secret store خود CMS تهیه کند؛ مقدار نمونه در مخزن وجود ندارد.
+
+### مرز مهم خواندن و نوشتن
+
+- خواندن SSR: کلید سایت در `Authorization: Bearer …` ارسال می‌شود و همهٔ کوئری‌های محتوای نسخه‌دار صریحاً `published` هستند.
+- ثبت سفارش/فرم: مرورگر به مسیر نسبی `/api/checkout` یا `/api/form-submissions` می‌فرستد. پروکسی Host اصلی را نگه می‌دارد و **کلید سایت، کوکی و Authorization بازدیدکننده را منتقل نمی‌کند**. CMS باید این درخواست را روی دامنهٔ ثبت‌شدهٔ مشتری تشخیص دهد.
+- در پیش‌نمایش عمومی این محیط، Host متعلق به دامنهٔ sandbox است؛ به همین دلیل حالت demo نوشتن را مسدود می‌کند. آزمون‌ها با یک CMS شبیه‌سازی‌شده و Host کنترل‌شده این مسیر را بررسی می‌کنند، نه با ادعای اتصال به حساب واقعی شما.
+- `/api/health` و `/api/revalidate` محلی‌اند و به CMS پروکسی نمی‌شوند. health وابسته به در دسترس بودن CMS نیست تا قطعی موقت CMS کانتینر سالم را از چرخه خارج نکند.
+
+## خرید و رفتار دکمه‌ها
+
+قرارداد فعلی CMS **سفارش تک‌محصولی** دارد؛ API سبد چندمحصولی اختراع نشده است. دکمهٔ سبد/سفارش هر کارت، پنجرهٔ همان محصول را باز می‌کند. نام، موبایل، تعداد، گزینهٔ محصول، کد تخفیف و روش پرداخت ارسال می‌شوند؛ مبلغ نهایی، مالیات، ارسال، تخفیف و موجودی را CMS محاسبه می‌کند. مرورگر قیمت یا مبلغ کلِ قابل اعتماد نمی‌فرستد.
+
+- گزینه‌های محصول با کلید پایدار `variation` ارسال می‌شوند؛ قیمت هر گزینه و موجودی آن جداگانه نمایش داده می‌شود.
+- محصول خارجی به لینک معتبر خودش می‌رود؛ محصول گروهی به اجزای خودش لینک دارد و والدِ غیرقابل خرید، سفارش نمی‌سازد.
+- پاسخ‌های 409، 429، خطای شبکه و حالت `503 + ok:true + pending:true` مدیریت می‌شوند. هدایت فقط به رسید همین سایت یا `redirectUrl` امن HTTPS انجام می‌شود.
+- رسید تمام اقلام، جمع، تخفیف، ارسال، مالیات، هزینه‌ها و راهنمای پرداخت را نشان می‌دهد؛ `no-store`، `noindex` و `no-referrer` دارد.
+- علاقه‌مندی‌ها همچنان محلی و مخصوص همان سایت‌اند. این دکمه دیگر وانمود نمی‌کند سفارش ثبت کرده است.
+- فرم‌های استاندارد Payload form-builder با `blockType`، پیام تأیید rich-text، هدایت تأیید و honeypot رسمی پشتیبانی می‌شوند. فیلدهای رایج متنی، ایمیل، عدد، تاریخ، انتخاب، رادیو، چک‌باکس و متن چندخطی رندر می‌شوند. فیلدهای خاص کشور/استان/آپلود/پرداختِ فرم هنوز رندر نمی‌شوند؛ برای فرم تماس کافه از فیلدهای پشتیبانی‌شده استفاده کنید.
+
+## مسیرها و محتوا
+
+`/`، `/products`، `/products/:slug`، `/posts`، `/posts/:slug`، `/search?q=…`، صفحات CMS، `/checkout/:orderId?r=…`، `/robots.txt` و `/sitemap.xml`. پیشوند زبان برای زبان غیرپیش‌فرض استفاده می‌شود. ترجمهٔ موجود، پیوند زبان و canonical/hreflang از دادهٔ CMS می‌آیند. بلوک‌های استاندارد محتوا، رسانه، CTA، ویژگی‌ها، نظرات مشتریان، FAQ، تماس، فرم، محصولات، قیمت‌گذاری و لوگوها پشتیبانی می‌شوند؛ بلوک ناشناخته به‌جای اجرای HTML دلخواه نادیده گرفته می‌شود.
+
+## آزمون‌ها
+
+```bash
+npm run check         # ساختار Manifest، قرارداد، syntax و مرز کلیدها
+npm test              # آزمون‌های واحد و HTTP با CMS شبیه‌سازی‌شده
+npm run test:browser  # Chromium واقعی: دسکتاپ/موبایل، RTL، سفارش، رسید، فرم و خطاها
+```
+
+آزمون مرورگر از Chromium بسته‌بندی‌شدهٔ `@sparticuz/chromium` استفاده می‌کند و کتابخانه‌های همراه آن را در `/tmp` باز می‌کند؛ نصب سیستمی یا دانلود از CDN مرورگر لازم نیست. تصاویر خروجی در `test-results/` ذخیره می‌شوند و وارد Git نمی‌شوند. آزمون‌های پرداخت به مقصد شبیه‌سازی‌شده می‌روند و هیچ تراکنش واقعی ایجاد نمی‌کنند.
+
+پوشش فعلی شامل ۱۶ آزمون واحد/یکپارچه و دو اجرای مرورگر است: قیمت و واحد پول، تاریخ شمسی، گزینه و موجودی، فیلتر انتشار، binding صفحه، زبان‌ها، کش و revalidation، امضای رسید، XSS، پروکسی، فرم، چیدمان فارسی/موبایل، علاقه‌مندی، هدایت PSP و حالت pending. این‌ها جای آزمون پذیرش روی دامنه و درگاه واقعی سایت شما را نمی‌گیرند.
+
+## استقرار Docker / Coolify
+
+```bash
+docker build -t coffee-poster .
+docker run --rm --env-file .env -p 3000:3000 coffee-poster
+```
+
+Manifest از `coolify_build` و `Dockerfile` استفاده می‌کند، پورت ۳۰۰۰ و health check محلی `/api/health` را اعلام می‌کند. ایمیج با کاربر غیرroot اجرا می‌شود، فقط وابستگی تولید را نصب می‌کند و secretها در لایه‌های ایمیج کپی نمی‌شوند. Docker در محیط ساخت این نسخه در دسترس نبود؛ Dockerfile و اجرای Node آزمون شده‌اند، اما ساخت خود ایمیج باید در میزبان دارای Docker انجام شود.
+
+برای استقرار مدیریت‌شده، ابتدا preview را با تنظیمات واقعی سایت بررسی کنید؛ سپس دامنه، موجودی، فرم، رسید و یک پرداخت sandbox واقعی را بپذیرید و بعد production را ارتقا دهید. health به‌تنهایی تأیید اتصال تجاری نیست. اگر به artifact تغییرناپذیر GHCR نیاز دارید، روش `registry_image` و ثبت digest را مطابق `docs/theme-artifacts.md` خود CMS پیکربندی کنید؛ این مخزن عمداً workflow حاوی حدسِ شناسهٔ package یا secret واقعی ندارد.
+
+## ساختار و وابستگی‌ها
+
+- `server.js`: سرور HTTP بومی Node، SSR، health/revalidation، sitemap و assetها
+- `src/`: آداپتور CMS، مسیریابی، کش، امنیت، رندر بلوک‌ها/محصولات/رسید و پروکسی
+- `style.css`: stylesheet هنری اصلی، بدون تغییر
+- `cms.css`: فونت خودمیزبان، RTL، صفحات محتوایی، فرم، checkout و رسید
+- `app.js`: تعاملات اصلی + ثبت واقعی سفارش/فرم
+- `vendor/eshobe-site-runtime/`: runtime رسمی، نسخهٔ 0.1.0، pin شده به commit `863f4f5d4485dfc847b4b1d013e644036580e591`؛ منبع و مجوز در NOTICE همان پوشه
+- `public/fonts/`: Vazirmatn خودمیزبان و مجوز OFL
+- `integration/eshobe-cms/`: روش قدیمی کپی‌کردن بلوک React؛ برای استقرار این قالب لازم نیست و نباید هم‌زمان نصب شود
+
+برای به‌روزرسانی runtime، منبع/مجوز/قرارداد را بررسی و همهٔ آزمون‌ها را اجرا کنید. فایل‌های `vendor/dist` را دستی تغییر ندهید.
