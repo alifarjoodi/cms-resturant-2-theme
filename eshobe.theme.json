@@ -15,7 +15,12 @@
     "radius": "lg",
     "lineHeight": 1.8
   },
-  "deployment": { "strategy": "coolify_build" },
+  "deployment": {
+    "strategy": "registry_image",
+    "registryProvider": "ghcr",
+    "registryImageRepository": "ghcr.io/alifarjoodi/cms-resturant-2-theme",
+    "registryVisibility": "public"
+  },
   "build": {
     "buildPack": "dockerfile",
     "baseDirectory": "/",
