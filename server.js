@@ -14,6 +14,7 @@ import { strings } from './src/ui.js';
 import { renderHome, renderContent, renderBlocksPage, renderError, renderReceipt, settingsFor, renderCard, cupHtml, articleGrid } from './src/render.js';
 import { lexical } from './src/lexical.js';
 import { productViewModel } from './src/products.js';
+import { isTableToken } from './src/menu.js';
 import { imageHtml } from './src/media.js';
 import { navigationView } from './src/navigation.js';
 
@@ -21,6 +22,7 @@ const root = path.dirname(fileURLToPath(import.meta.url));
 const staticFiles = new Map([
   ['/style.css', ['style.css', 'text/css; charset=utf-8']],
   ['/cms.css', ['cms.css', 'text/css; charset=utf-8']],
+  ['/money.js', ['money.js', 'text/javascript; charset=utf-8']],
   ['/app.js', ['app.js', 'text/javascript; charset=utf-8']],
 ]);
 const mime = { '.woff': 'font/woff', '.txt': 'text/plain; charset=utf-8' };
@@ -35,7 +37,12 @@ export function createApp({ env = process.env, client: injectedClient, fetchImpl
     const site = await client.getSite();
     const segments = pathname.split('/').filter(Boolean).map(decodeURIComponent);
     const locale = localeFor(site, segments);
-    return { site, locale, segments, config, client, demo, t: strings(locale || site.defaultLocale), settings: settingsFor(site), path: pathname, search, requestOrigin: `http://${req.headers.host || 'localhost'}` };
+    // The table QR carries an opaque POS token. It is only ever *passed on* to
+    // establish dine-in; the CMS re-validates it and the POS resolves it, so a
+    // forged value buys nothing here and is never stored.
+    const rawToken = search?.get('tableToken') ?? search?.get('t') ?? null;
+    const tableToken = isTableToken(rawToken) ? rawToken : null;
+    return { site, locale, segments, config, client, demo, cafe: false, tableToken, t: strings(locale || site.defaultLocale), settings: settingsFor(site), path: pathname, search, requestOrigin: `http://${req.headers.host || 'localhost'}` };
   }
 
   async function decorate(ctx) {
@@ -94,10 +101,12 @@ export function createApp({ env = process.env, client: injectedClient, fetchImpl
       const product = await client.bySlug('products', route.slug, ctx.locale);
       if (!product || product.noindex) return html(res, 404, renderError(ctx, 404, ctx.t.notFound), req);
       const p = productViewModel(product, ctx.site, ctx.locale, 0);
+      ctx.cafe = p.usesCart;
+      ctx.productViews = [p];
       ctx.alternates = await alternatesFor(ctx, product, '/products');
       const body = `<article class="product-page"><div class="product-page__art">${p.image ? imageHtml({ url: p.largeImage || p.image }, ctx.site, p.title, { eager: true, size: 'large' }) : cupHtml(p.artwork)}</div><div class="product-page__info"><p class="eyebrow">${e(p.category)}</p><h2>${e(p.title)}</h2><p class="product-page__price">${e(p.price)}</p>${p.compareAt ? `<s>${e(p.compareAt)}</s>` : ''}<div class="rich-text">${lexical(product.body, ctx)}</div>${product.productType === 'variable' ? `<label class="checkout-field">${e(ctx.t.variation)}<select id="product-page-variation">${p.variations.map((v) => `<option value="${e(v.key)}">${e(v.label)} — ${e(v.price)}</option>`).join('')}</select></label>` : ''}${p.grouped.length ? `<ul>${p.grouped.map((item) => `<li><a href="${e(item.href)}">${e(item.title)}</a></li>`).join('')}</ul>` : ''}${p.externalUrl ? `<a class="cms-button" href="${e(p.externalUrl)}" target="_blank" rel="noopener noreferrer">${e(p.buttonText || ctx.t.external)}</a>` : p.canBuy ? `<button class="cms-button" type="button" data-buy-index="0">${e(ctx.t.order)}</button>` : `<p>${e(ctx.t.soldOut)}</p>`}<a class="text-link" href="${e(p.href)}" hidden>${e(ctx.t.viewProduct)}</a></div></article>`;
       const output = await renderContent(ctx, { heading: p.title, page: { meta: { description: product.metaDescription || product.summary } }, body, noindex: Boolean(product.noindex) });
-      const data = jsonScript({ locale: ctx.locale, defaultLocale: ctx.site.defaultLocale, siteKey: ctx.site.id, demo, products: [p], paymentMethods: ctx.site.paymentMethods, strings: ctx.t });
+      const data = jsonScript({ locale: ctx.locale, defaultLocale: ctx.site.defaultLocale, siteKey: ctx.site.id, demo, cafe: ctx.cafe, tableToken: ctx.tableToken ?? null, currency: ctx.site.store.currency, products: [p], paymentMethods: ctx.site.paymentMethods, strings: ctx.t });
       return html(res, 200, output.replace(/<script type="application\/json" id="theme-data">.*?<\/script>/s, `<script type="application/json" id="theme-data">${data}</script>`), req);
     }
     if (route.kind === 'posts' || route.kind === 'post') {
@@ -128,6 +137,9 @@ export function createApp({ env = process.env, client: injectedClient, fetchImpl
       const result = await client.list('products', { locale, limit: 12, page: page_number, pagination: true, sort: '-createdAt' });
       const views = result.docs.map((p, i) => productViewModel(p, ctx.site, ctx.locale, i));
       ctx.productViews = views;
+      // The full menu is where a guest browses beyond the poster, so the cart
+      // follows them here too.
+      ctx.cafe = views.some((view) => view.usesCart);
       const body = `<div class="menu-grid cms-product-grid">${views.map((p, i) => renderCard(p, i, ctx)).join('')}</div>${!views.length ? `<p>${e(ctx.t.emptyMenu)}</p>` : ''}`;
       const output = await renderContent(ctx, { heading: ctx.t.menu, body, pagination: paginationHtml(ctx, result, url.searchParams) });
       return html(res, 200, injectProducts(output, ctx, views), req);
@@ -224,7 +236,7 @@ export function createApp({ env = process.env, client: injectedClient, fetchImpl
 }
 
 function injectProducts(output, ctx, products) {
-  return output.replace(/<script type="application\/json" id="theme-data">.*?<\/script>/s, `<script type="application/json" id="theme-data">${jsonScript({ locale: ctx.locale, defaultLocale: ctx.site.defaultLocale, siteKey: ctx.site.id, demo: ctx.demo, products, paymentMethods: ctx.site.paymentMethods, strings: ctx.t })}</script>`);
+  return output.replace(/<script type="application\/json" id="theme-data">.*?<\/script>/s, `<script type="application/json" id="theme-data">${jsonScript({ locale: ctx.locale, defaultLocale: ctx.site.defaultLocale, siteKey: ctx.site.id, demo: ctx.demo, cafe: Boolean(ctx.cafe), tableToken: ctx.tableToken ?? null, currency: ctx.site.store.currency, products, paymentMethods: ctx.site.paymentMethods, strings: ctx.t })}</script>`);
 }
 function paginationHtml(ctx, result, params) {
   const link = (page, label) => { const q = new URLSearchParams(params); q.set('page', String(page)); return `<a class="cms-button" href="${e(ctx.path)}?${e(q)}">${e(label)}</a>`; };

@@ -1,5 +1,6 @@
 import { ContentCache } from './cache.js';
 import { isCurrencyCode } from '@eshobe/site-runtime';
+import { MENU_LIMIT_MAX, menuGroupsFor } from './menu.js';
 import { relationId, safeUrl, documentPath } from './routing.js';
 
 export class CmsError extends Error {
@@ -90,14 +91,23 @@ export class CmsClient {
     return this.bySlug('pages', 'home', locale, { depth: 2 });
   }
   async productsForBlock(block, site, locale, settings) {
-    const limit = Math.max(1, Math.min(24, Number(block.limit ?? settings.menuLimit ?? 8) || 8));
+    const limit = Math.max(1, Math.min(MENU_LIMIT_MAX, Number(block.limit ?? settings.menuLimit ?? 8) || 8));
+    const cafe = block.mode === 'cafe';
+    // A cafAc menu is the POS's order, not a "newest first" shelf: sorting by
+    // category then accounting order is what makes the site read like the menu
+    // the guest is holding.
+    const ordered = (products) => (cafe ? menuGroupsFor(products) : products);
     if (block.populateBy === 'selection') {
-      const ids = (block.products ?? []).map(relationId).filter(Boolean).slice(0, 24);
+      const ids = (block.products ?? []).map(relationId).filter(Boolean).slice(0, MENU_LIMIT_MAX);
       if (!ids.length) return [];
-      const result = await this.list('products', { where: { id: { in: ids } }, locale, limit: ids.length });
-      return ids.map((id) => result.docs.find((p) => String(p.id) === String(id))).filter(Boolean);
+      const result = await this.list('products', { where: { id: { in: ids } }, locale, limit: ids.length, depth: 1 });
+      return ordered(ids.map((id) => result.docs.find((p) => String(p.id) === String(id))).filter(Boolean));
     }
-    return (await this.list('products', { locale, limit, sort: '-createdAt' })).docs;
+    // A catalogue that is really a menu is read without a date sort: the POS's
+    // order is the only order, and `-createdAt` on a synced menu is meaningless
+    // (every mirrored row was created within the same minute).
+    const query = { locale, limit, depth: 1, ...(cafe ? {} : { sort: '-createdAt' }) };
+    return ordered((await this.list('products', query)).docs);
   }
   async getRedirect(path, site, locale) {
     const result = await this.list('redirects', { where: { from: { equals: path } }, limit: 1, depth: 1, locale });

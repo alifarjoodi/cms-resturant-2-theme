@@ -43,7 +43,7 @@ export function shell(ctx, content, { title, description = '', bodyClass = '', n
     ${favicon ? `<link rel="icon" href="${e(favicon)}">` : ''}
     <link rel="preload" href="/public/fonts/vazirmatn-${locale === 'fa' ? 'arabic' : 'latin'}-400-normal.woff" as="font" type="font/woff" crossorigin>
     <link rel="stylesheet" href="/style.css"><link rel="stylesheet" href="/cms.css">
-    <style>${themeCss(site.theme)}</style><script src="/app.js" defer></script>
+    <style>${themeCss(site.theme)}</style><script src="/money.js"></script><script src="/app.js" defer></script>
     ${jsonLd ? `<script type="application/ld+json">${jsonScript(jsonLd)}</script>` : ''}`;
   return template.replace('{{HEAD}}', head).replace('{{LANG}}', e(locale)).replace('{{DIR}}', dirFor(locale)).replace('{{BODY_CLASS}}', e(bodyClass)).replace('{{CONTENT}}', content);
 }
@@ -53,11 +53,15 @@ export async function renderHome(ctx, page) {
   const settings = ctx.settings;
   const blocks = page?.layout ?? [];
   const grid = blocks.find((b) => b.blockType === 'productGrid' && site.blocks.includes('productGrid'));
+  const cafe = grid?.mode === 'cafe';
   let products = [];
   if (grid) products = await client.productsForBlock(grid, site, locale, settings);
-  else if (site.type === 'store' && !page) products = (await client.list('products', { locale, limit: settings.menuLimit, sort: '-createdAt' })).docs;
+  else if (site.type === 'store' && !page) products = await client.list('products', { locale, limit: settings.menuLimit }).then((result) => result.docs);
   const showBuyButton = grid?.showBuyButton !== false;
   const views = products.map((p, i) => productViewModel(p, site, locale, i, { showBuyButton }));
+  // A POS-managed menu is a cart even when the block still says `catalog`: the
+  // add-ons are part of the price, and only the cart request carries them.
+  ctx.cafe = cafe || views.some((view) => view.usesCart);
   ctx.productViews = views;
   const brandName = site.branding?.displayName || site.name;
   const words = brandName.trim().split(/\s+/);
@@ -79,8 +83,8 @@ export async function renderHome(ctx, page) {
         <div class="hero-cup" aria-hidden="true"><span class="hero-cup__saucer"></span><span class="hero-cup__mug"><span class="hero-cup__coffee"></span></span></div>
       </aside>
       <footer class="brand__foot">${description ? `<p class="brand__desc">${e(description)}</p>` : ''}<p class="brand__slogan">${slogan.map((line, i) => `<span class="${i % 2 ? 'slogan-small' : 'slogan-large'}">${e(line)}</span>`).join('')}</p></footer>
-    </main>${await renderExtraBlocks(ctx, blocks, grid)}${ctx.footerHtml}</div>${detailHtml(ctx)}${checkoutHtml(ctx, views)}
-    <script type="application/json" id="theme-data">${jsonScript({ locale, defaultLocale: site.defaultLocale, siteKey: site.id || site.slug, demo: ctx.demo, currency: site.store.currency, products: ctx.productViews, paymentMethods: site.paymentMethods || [], strings: t })}</script>
+    </main>${await renderExtraBlocks(ctx, blocks, grid)}${ctx.footerHtml}${cartBarHtml(ctx)}</div>${detailHtml(ctx)}${checkoutHtml(ctx, views)}
+    <script type="application/json" id="theme-data">${jsonScript({ locale, defaultLocale: site.defaultLocale, siteKey: site.id || site.slug, demo: ctx.demo, cafe: ctx.cafe, tableToken: ctx.tableToken ?? null, currency: site.store.currency, products: ctx.productViews, paymentMethods: site.paymentMethods || [], strings: t })}</script>
     <p class="sr-only" id="action-status" role="status" aria-live="polite"></p>`;
   return shell(ctx, home, { title: '', description: page?.meta?.description || description, doc: page, canonical: `${publicOrigin(ctx.config, site, ctx.requestOrigin)}${pathFor(site, locale)}` });
 }
@@ -114,10 +118,18 @@ export function detailHtml(ctx) {
     <div class="detail__body"><div class="detail__info"><p class="detail__kicker">${e(t.aboutCup)}</p><div class="detail__desc rich-text" id="detail-desc"></div><ul class="detail__notes"></ul>
       <div class="detail__stats"><div class="detail__stat" data-stat="intensity"><span class="detail__stat-label">${e(t.intensity)}</span><span class="detail__dots"></span></div><div class="detail__stat" data-stat="volume"><span class="detail__stat-label">${e(t.volume)}</span><span class="detail__stat-value" data-field="volume"></span></div><div class="detail__stat" data-stat="temp"><span class="detail__stat-label">${e(t.served)}</span><span class="detail__stat-value" data-field="temp"></span></div></div>
       <div class="detail__variation" hidden><label for="detail-variation">${e(t.variation)}</label><select id="detail-variation"></select></div>
-      <div class="detail__purchase"><p class="detail__price"><span class="detail__price-amount"></span><s class="detail__compare" hidden></s><span class="detail__price-note">${e(t.perCup)}</span></p><button class="detail__cta" type="button"><span>${e(t.order)}</span>${arrow}</button></div>
+      <div class="detail__modifiers" id="detail-modifiers" hidden></div>
+      <div class="detail__purchase"><div class="detail__qty" id="detail-qty" hidden><button type="button" data-step="-1" aria-label="${e(t.fewer)}">−</button><output id="detail-quantity" aria-live="polite">۱</output><button type="button" data-step="1" aria-label="${e(t.more)}">+</button></div><p class="detail__price"><span class="detail__price-amount"></span><s class="detail__compare" hidden></s><span class="detail__price-note">${e(t.perCup)}</span></p><button class="detail__cta" type="button"><span>${e(t.order)}</span>${arrow}</button></div>
+      <p class="detail__modifier-error" role="alert" hidden></p>
       <a class="detail__permalink" href="#">${e(t.viewProduct)}</a><p class="detail__stock" role="status"></p><p class="sr-only" role="status" aria-live="polite"></p>
     </div><div class="detail__art"><span class="detail__ghost" aria-hidden="true"></span><span class="detail__glow" aria-hidden="true"></span><div class="detail__stage" aria-hidden="true"></div><div class="detail__identity"><p class="detail__eyebrow"><span class="detail__num"></span><span class="detail__cat"></span></p><h2 class="detail__name" id="detail-name"></h2></div></div></div>
   </div></dialog>`;
+}
+
+export function cartBarHtml(ctx) {
+  if (!ctx.cafe) return '';
+  const t = ctx.t;
+  return `<div class="cart-bar" id="cart-bar" hidden><button class="cart-bar__button" type="button" data-action="open-cart"><span class="cart-bar__count" id="cart-count">۰</span><span class="cart-bar__label">${e(t.viewOrder)}</span><strong class="cart-bar__total" id="cart-total"></strong></button></div>`;
 }
 
 export function checkoutHtml(ctx, products) {
@@ -126,10 +138,13 @@ export function checkoutHtml(ctx, products) {
   return `<dialog class="checkout" id="checkout-dialog" aria-labelledby="checkout-title"><div class="checkout__panel"><button type="button" class="checkout__close" aria-label="${e(t.close)}">×</button><p class="checkout__eyebrow">${e(ctx.site.branding?.displayName || ctx.site.name)}</p><h2 id="checkout-title">${e(t.checkoutTitle)}</h2>
     <div class="checkout__summary"><span id="checkout-product"></span><strong id="checkout-price"></strong></div>
     ${ctx.demo ? `<p class="notice">${e(t.demoCheckout)}</p>` : ''}
+    <ul class="cart-lines" id="cart-lines" hidden></ul>
     <form id="checkout-form"><div class="honeypot" aria-hidden="true"><label>Company<input name="company" tabindex="-1" autocomplete="off"></label></div>
       <label class="checkout-field" id="checkout-variation-field" hidden>${e(t.variation)}<select name="variation" id="checkout-variation"></select></label>
-      <div class="checkout-fields">${field('name', t.name, 'text', 'required maxlength="200" autocomplete="name"')}${field('phone', t.phone, 'tel', 'required inputmode="tel" autocomplete="tel" dir="ltr" placeholder="09121234567"')}${field('quantity', t.quantity, 'number', 'required min="1" max="99" value="1" inputmode="numeric"')}${field('email', t.email, 'email', 'autocomplete="email" dir="ltr" maxlength="254"')}</div>
-      ${field('couponCode', t.coupon, 'text', 'maxlength="80" autocomplete="off"')}
+      <div class="checkout-fields"><label class="checkout-field">${e(t.name)}<input name="name" type="text" required maxlength="200" autocomplete="name"></label><label class="checkout-field">${e(t.phone)}<input name="phone" type="tel" required inputmode="tel" autocomplete="tel" dir="ltr" placeholder="09121234567"></label><label class="checkout-field" id="checkout-quantity-field">${e(t.quantity)}<input name="quantity" type="number" required min="1" max="99" value="1" inputmode="numeric"></label>${field('email', t.email, 'email', 'autocomplete="email" dir="ltr" maxlength="254"')}</div>
+      <fieldset class="checkout-methods checkout-service" id="checkout-service" hidden><legend>${e(t.serviceMode)}</legend><div id="service-modes"></div></fieldset>
+      <fieldset class="checkout-methods checkout-service" id="checkout-payment-choice" hidden><legend>${e(t.payment)}</legend><div id="payment-choices"></div></fieldset>
+      <label class="checkout-field" id="checkout-coupon-field">${e(t.coupon)}<input name="couponCode" type="text" maxlength="80" autocomplete="off"></label>
       <label class="checkout-field">${e(t.note)}<textarea name="note" rows="2" maxlength="500"></textarea></label>
       <fieldset class="checkout-methods" hidden><legend>${e(t.payment)}</legend><div id="payment-methods"></div></fieldset>
       <p class="checkout__secure">${e(t.secure)}</p><p id="checkout-error" role="alert" hidden></p>
@@ -142,7 +157,7 @@ export function articleGrid(docs, ctx) {
 }
 
 export async function renderContent(ctx, { heading, body = '', docs = [], page, extra = '', pagination, noindex = false }) {
-  const content = `<div class="site-frame">${ctx.demoBanner}${ctx.navigationHtml}<main class="content-page"><header class="content-page__head"><p class="eyebrow">${e(ctx.site.branding?.displayName || ctx.site.name)}</p><h1>${e(heading)}</h1>${page?.meta?.description ? `<p>${e(page.meta.description)}</p>` : ''}</header>${page?.hero?.richText ? lexical(page.hero.richText, ctx) : ''}${body}${docs.length ? articleGrid(docs, ctx) : ''}${extra}${pagination || ''}</main>${ctx.footerHtml}</div>${detailHtml(ctx)}${checkoutHtml(ctx, [])}<script type="application/json" id="theme-data">${jsonScript({ locale: ctx.locale, defaultLocale: ctx.site.defaultLocale, siteKey: ctx.site.id || ctx.site.slug, demo: ctx.demo, products: ctx.productViews || [], strings: ctx.t, paymentMethods: [] })}</script><p class="sr-only" id="action-status" role="status" aria-live="polite"></p>`;
+  const content = `<div class="site-frame">${ctx.demoBanner}${ctx.navigationHtml}<main class="content-page"><header class="content-page__head"><p class="eyebrow">${e(ctx.site.branding?.displayName || ctx.site.name)}</p><h1>${e(heading)}</h1>${page?.meta?.description ? `<p>${e(page.meta.description)}</p>` : ''}</header>${page?.hero?.richText ? lexical(page.hero.richText, ctx) : ''}${body}${docs.length ? articleGrid(docs, ctx) : ''}${extra}${pagination || ''}</main>${ctx.footerHtml}${cartBarHtml(ctx)}</div>${detailHtml(ctx)}${checkoutHtml(ctx, [])}<script type="application/json" id="theme-data">${jsonScript({ locale: ctx.locale, defaultLocale: ctx.site.defaultLocale, siteKey: ctx.site.id || ctx.site.slug, demo: ctx.demo, cafe: Boolean(ctx.cafe), tableToken: ctx.tableToken ?? null, currency: ctx.site.store.currency, products: ctx.productViews || [], strings: ctx.t, paymentMethods: ctx.site.paymentMethods || [] })}</script><p class="sr-only" id="action-status" role="status" aria-live="polite"></p>`;
   return shell(ctx, content, { title: heading, description: page?.meta?.description || '', doc: page, noindex });
 }
 
