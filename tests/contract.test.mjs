@@ -1,6 +1,8 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { createHmac } from 'node:crypto';
+import { readFile } from 'node:fs/promises';
+import vm from 'node:vm';
 import { formatPrice, formatDate, themeCss, majorToMinor } from '@eshobe/site-runtime';
 import { queryString } from '../src/cms.js';
 import { ContentCache } from '../src/cache.js';
@@ -8,9 +10,10 @@ import { resolveSiteRoute, localeFor, safeUrl, normalizePath } from '../src/rout
 import { verifyRevalidation, verifyReceipt, receiptSignature, escapeHtml, jsonScript } from '../src/security.js';
 import { cmsOwnedApi } from '../src/proxy.js';
 import { productViewModel, availability } from '../src/products.js';
+import { activeModifierGroups, isTableToken, menuGroupsFor, menuSort, menuState, needsCart } from '../src/menu.js';
 import { lexical } from '../src/lexical.js';
 import { createApp } from '../server.js';
-import { startMockCms, API_KEY, SITE_ID, REVALIDATE_SECRET, RECEIPT_SECRET, ORDER_ID, PRODUCT_ID, variable, allBlocks } from './fixtures.mjs';
+import { startMockCms, API_KEY, SITE_ID, REVALIDATE_SECRET, RECEIPT_SECRET, ORDER_ID, PRODUCT_ID, variable, cafeItem, cafeSoldOut, allBlocks } from './fixtures.mjs';
 
 async function running(t, options = {}) {
   const cms = await startMockCms();
@@ -75,6 +78,122 @@ test('cache deduplicates, expires and stale invalidation cannot refill', async (
   let finish; const pending = cache.get('b', () => new Promise((r) => { finish = r; }));
   cache.invalidate(); finish('old'); assert.equal(await pending, 'old'); assert.equal(cache.entries.has('b'), false);
 });
+test('café menu rules match the CMS: availability, order, retired add-ons and bounds', () => {
+  // Availability is the CMS's decision, not an inventory guess.
+  assert.equal(menuState({ menuAvailability: 'sold_out', trackInventory: false }), 'sold_out');
+  assert.equal(menuState({ menuAvailability: 'unavailable', inventory: 9, trackInventory: true }), 'unavailable');
+  assert.equal(menuState({ menuAvailability: 'available', trackInventory: true, inventory: null }), 'unavailable');
+  assert.equal(menuState({ menuAvailability: 'available', trackInventory: true, inventory: 0 }), 'sold_out');
+  assert.equal(menuState({ menuAvailability: 'available', trackInventory: false }), 'available');
+  assert.equal(menuState({}), 'available');
+
+  // Category order, then the item's own accounting order.
+  assert.deepEqual(menuGroupsFor([cafeSoldOut, cafeItem]).map((p) => p.title), [cafeItem.title, cafeSoldOut.title]);
+  assert.deepEqual(menuSort([{ menuOrder: 2, menuSourceId: 'b' }, { menuOrder: 1, menuSourceId: 'z' }, { menuOrder: 1, menuSourceId: 'a' }]).map((p) => p.menuSourceId), ['a', 'z', 'b']);
+
+  // A retired option is gone; "999" means "as many as it has", and a required
+  // group's bounds are made real against that count.
+  const groups = activeModifierGroups(cafeItem);
+  assert.equal(groups.length, 2);
+  const toppings = groups.find((g) => g.sourceId === 'toppings');
+  assert.deepEqual(toppings.options.map((o) => o.sourceId), ['chocolate', 'honey']);
+  assert.equal(toppings.maxSelections, 2);
+  assert.equal(toppings.minSelections, 0);
+  const milk = groups.find((g) => g.sourceId === 'milk');
+  assert.equal(milk.minSelections, 1);
+  assert.equal(milk.maxSelections, 1);
+  // A group whose options were all retired is not a group at all.
+  assert.equal(activeModifierGroups({ modifierGroups: [{ sourceId: 'x', label: 'X', maxSelections: 1, options: [{ sourceId: 'r', label: 'R', priceDelta: 1, active: false }] }] }).length, 0);
+  // A group can never demand more than it offers.
+  assert.equal(activeModifierGroups({ modifierGroups: [{ sourceId: 'x', label: 'X', minSelections: 5, maxSelections: 8, options: [{ sourceId: 'a', label: 'A', priceDelta: 1 }, { sourceId: 'b', label: 'B', priceDelta: 2 }] }] })[0].minSelections, 2);
+
+  assert.equal(needsCart(cafeItem), true);
+  assert.equal(needsCart({ productType: 'simple', modifierGroups: [{ sourceId: 'g', label: 'G', maxSelections: 1, options: [{ sourceId: 'o', label: 'O', priceDelta: 1 }] }] }), true);
+  assert.equal(needsCart({ productType: 'simple' }), false);
+
+  assert.equal(isTableToken('table-7-abc123'), true);
+  assert.equal(isTableToken('short'), false);
+  assert.equal(isTableToken('has space 12345'), false);
+  assert.equal(isTableToken(null), false);
+});
+
+test('café view model prices add-ons, mirrors sold-out and never offers a dead line', () => {
+  const site = { store: { currency: 'IRT' }, media: { origin: 'https://shop.example' }, defaultLocale: 'fa' };
+  const ready = productViewModel(cafeItem, site, 'fa', 0);
+  assert.equal(ready.usesCart, true);
+  assert.equal(ready.priceMinor, 40000);
+  assert.equal(ready.state, 'available');
+  assert.equal(ready.canBuy, true);
+  assert.equal(ready.modifiers.length, 2);
+  assert.equal(ready.modifiers[0].options[0].priceLabel, '+۲۰٬۰۰۰ تومان');
+  const out = productViewModel(cafeSoldOut, site, 'fa', 1);
+  assert.equal(out.state, 'sold_out');
+  assert.equal(out.canBuy, false);
+  assert.equal(out.stock, 0);
+});
+
+test('browser money formatting is byte-identical to the runtime it previews', async () => {
+  const source = await readFile(new URL('../money.js', import.meta.url), 'utf8');
+  const sandbox = { Intl };
+  sandbox.globalThis = sandbox;
+  vm.runInNewContext(source, sandbox);
+  const { formatPrice: browserPrice, formatDelta } = sandbox.eshobeMoney;
+  for (const code of ['IRT', 'IRR', 'USD', 'EUR']) {
+    for (const locale of ['fa', 'en']) {
+      for (const minor of [0, 1, 950, 40000, 140000, 123456789]) {
+        assert.equal(browserPrice(minor, code, locale), formatPrice(minor, code, locale), `${code} ${locale} ${minor}`);
+      }
+    }
+  }
+  assert.equal(browserPrice(40000, 'IRT', 'fa'), '۴۰٬۰۰۰ تومان');
+  assert.equal(browserPrice(Number.NaN, 'IRT', 'fa'), '');
+  assert.equal(browserPrice(1000, 'XYZ', 'fa'), '');
+  assert.equal(formatDelta(20000, 'IRT', 'fa'), '+۲۰٬۰۰۰ تومان');
+  assert.equal(formatDelta(-5000, 'IRT', 'fa'), '−۵٬۰۰۰ تومان');
+  assert.equal(formatDelta(0, 'IRT', 'fa'), '');
+});
+
+test('café storefront renders the POS order, a cart and the table token', async (t) => {
+  const { base, cms } = await running(t);
+  cms.state.cafe = true;
+  const html = await (await fetch(`${base}/?tableToken=table-7-abc123`)).text();
+  // Ordered by the POS category/menu order, not by creation date.
+  assert.ok(html.indexOf(cafeItem.title) < html.indexOf(cafeSoldOut.title), 'menu order');
+  assert.ok(html.includes('data-menu-count="2"'));
+  assert.ok(html.includes('stock-label'), 'sold-out chip');
+  assert.ok(html.includes('id="cart-bar"'));
+  const themeData = JSON.parse(html.match(/<script type="application\/json" id="theme-data">(.*?)<\/script>/s)[1]);
+  assert.equal(themeData.cafe, true);
+  assert.equal(themeData.tableToken, 'table-7-abc123');
+  assert.equal(themeData.currency, 'IRT');
+  assert.equal(themeData.products[0].modifiers.length, 2);
+  // The add-on picker and the cart sheet ship with the page.
+  assert.ok(html.includes('id="detail-modifiers"'));
+  assert.ok(html.includes('id="cart-lines"'));
+  assert.ok(html.includes('id="checkout-service"'));
+  assert.ok(html.includes('id="checkout-payment-choice"'));
+  // A forged token is dropped rather than forwarded to the CMS.
+  const forged = JSON.parse((await (await fetch(`${base}/?t=${encodeURIComponent('bad token!')}`)).text()).match(/<script type="application\/json" id="theme-data">(.*?)<\/script>/s)[1]);
+  assert.equal(forged.tableToken, null);
+});
+
+test('a café cart reaches the CMS unchanged and still carries no credential', async (t) => {
+  const { base, cms } = await running(t);
+  const body = {
+    items: [{ product: cafeItem.id, quantity: 2, modifiers: [{ groupId: 'milk', optionIds: ['oat'] }] }],
+    name: 'میزبان', phone: '09123456789', company: '',
+    checkoutRequestId: '9f2c1a4e77b04d0f8c31ab77e0d5',
+    serviceMode: 'dine_in', tableToken: 'table-7-abc123',
+    paymentChoice: 'counter', locale: 'fa',
+  };
+  const response = await fetch(`${base}/api/checkout`, { method: 'POST', headers: { 'content-type': 'application/json', cookie: 'payload-token=private', authorization: 'Bearer visitor' }, body: JSON.stringify(body) });
+  assert.equal(response.status, 200);
+  const write = cms.state.checkouts.at(-1);
+  assert.deepEqual(write.body, body);
+  assert.equal(write.headers.authorization, undefined);
+  assert.equal(write.headers.cookie, undefined);
+});
+
 test('variable products use stable keys, own prices and stock; external/grouped are not purchasable', () => {
   const site = { store: { currency: 'IRT' }, media: { origin: 'https://shop.example' }, defaultLocale: 'fa' };
   const p = productViewModel(variable, site, 'fa', 0);

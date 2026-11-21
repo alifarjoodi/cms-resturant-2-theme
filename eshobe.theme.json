@@ -48,7 +48,7 @@
     "tagline": { "type": "text", "default": "BREWED FOR THE BOLD", "labelFa": "شعار کوتاه", "labelEn": "Short tagline", "group": "general" },
     "brandDescription": { "type": "text", "default": "A perfect cup of coffee, made just for you. Energize your morning and fuel your day with our premium blends.", "labelFa": "توضیح برند", "labelEn": "Brand description", "group": "general" },
     "slogan": { "type": "text", "default": "BREWED\nFOR COMFORT,\nCRAFTED\nFOR YOU", "labelFa": "شعار چهار خطی؛ هر خط جدا", "labelEn": "Four-line slogan; one line per row", "group": "design" },
-    "menuLimit": { "type": "number", "default": 8, "min": 1, "max": 24, "labelFa": "حداکثر محصول در منو", "labelEn": "Maximum menu products", "group": "design" },
+    "menuLimit": { "type": "number", "default": 8, "min": 1, "max": 100, "labelFa": "حداکثر محصول در منو", "labelEn": "Maximum menu products", "group": "design" },
     "showNavigation": { "type": "boolean", "default": true, "labelFa": "نمایش منوهای سایت", "labelEn": "Show CMS navigation", "group": "design" },
     "showFavorites": { "type": "boolean", "default": true, "labelFa": "نمایش علاقه‌مندی‌ها", "labelEn": "Show favourites", "group": "design" }
   },

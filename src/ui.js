@@ -35,6 +35,18 @@ export function strings(locale) {
     demoCheckout: ['این فقط پیش‌نمایش طراحی است؛ هیچ سفارش یا پرداختی ثبت نمی‌شود.', 'This is a design preview only; no order or payment is created.'],
     addedFav: ['به علاقه‌مندی‌ها اضافه شد.', 'Added to favourites.'], removedFav: ['از علاقه‌مندی‌ها حذف شد.', 'Removed from favourites.'],
     menuLabel: ['منوی سایت', 'Site navigation'], language: ['زبان سایت', 'Site language'],
+    // Café order: cart, add-ons, service and payment.
+    viewOrder: ['مشاهده سفارش', 'View order'], addToOrder: ['افزودن به سفارش', 'Add to order'],
+    fewer: ['یکی کمتر', 'One fewer'], more: ['یکی بیشتر', 'One more'],
+    serviceMode: ['نوع سفارش', 'How you are ordering'],
+    dineIn: ['صرف در کافه', 'Dine in'], takeaway: ['بیرون‌بر', 'Takeaway'],
+    payAtCounter: ['پرداخت در صندوق', 'Pay at the counter'], payOnline: ['پرداخت آنلاین', 'Pay online'],
+    tableLabel: ['میز', 'Table'], tableHint: ['میز خود را از روی کد QR اسکن کنید.', 'Scan the QR code on your table.'],
+    cartEmpty: ['سبد سفارش خالی است.', 'Your order is empty.'], cartRemove: ['حذف', 'Remove'],
+    itemCount: ['قلم', 'items'], modifierRequired: ['یک گزینه از این بخش لازم است.', 'Choose one of these.'],
+    modifierMax: ['بیشتر از این تعداد قابل انتخاب نیست.', 'You cannot pick more than this.'],
+    cartNeedsTable: ['برای صرف در کافه، کد میز لازم است.', 'Dine-in needs the table QR code.'],
+    chooseOne: ['یکی را انتخاب کنید', 'Choose one'], chooseAny: ['هر تعداد که بخواهید', 'Choose any'],
   };
   return Object.fromEntries(Object.entries(pairs).map(([key, values]) => [key, values[fa ? 0 : 1]]));
 }

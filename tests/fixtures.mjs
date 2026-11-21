@@ -11,6 +11,32 @@ export const REVALIDATE_SECRET = 'test-revalidation-secret';
 export const API_KEY = 'test-site-key-not-a-real-credential';
 export const simple = { id: PRODUCT_ID, title: 'قهوه آزمایشی', slug: 'coffee', summary: 'توضیح کوتاه', price: majorToMinor(180000, 'IRT'), productType: 'simple', _status: 'published', trackInventory: true, inventory: 4, image: { url: '/api/media/file/coffee.png', alt: 'قهوه', width: 600, height: 600 }, body: { root: { type: 'root', direction: 'rtl', children: [{ type: 'paragraph', direction: 'rtl', children: [{ type: 'text', text: 'توضیح کامل محصول' }] }] } } };
 export const variable = { id: '44444444-4444-4444-8444-444444444444', title: 'قهوه گزینه‌دار', slug: 'variable-coffee', price: 180000, productType: 'variable', _status: 'published', attributes: [{ key: 'size', name: 'اندازه', usedForVariation: true, options: [{ value: 'کوچک' }, { value: 'بزرگ' }] }], variations: [{ key: 'small-stable', label: 'کوچک', price: 180000, active: true, trackInventory: true, inventory: 2, attributeValues: { size: 'کوچک' } }, { key: 'large-stable', label: 'بزرگ', price: 230000, active: true, trackInventory: false, attributeValues: { size: 'بزرگ' } }, { key: 'inactive', label: 'غیرفعال', price: 1, active: false }] };
+/** A POS-mirrored café item: no art, two add-on groups, one required. */
+export const cafeItem = {
+  id: '55555555-5555-4555-8555-555555555555', title: 'چای کوچک', slug: 'cafe-item-tea', summary: '', price: 40000,
+  productType: 'simple', _status: 'published', trackInventory: true, inventory: 296,
+  menuSourceSystem: 'biza_miz', menuSourceId: 'menu_item:tea', externalInventory: true, menuAvailability: 'available', menuOrder: 0,
+  terms: [{ id: 'term-tea', name: 'نوشیدنی گرم', menuOrder: 0, menuSourceSystem: 'biza_miz' }],
+  modifierGroups: [
+    {
+      sourceId: 'toppings', label: 'تاپینگ', minSelections: 0, maxSelections: 999, active: true, menuOrder: 0,
+      options: [
+        { sourceId: 'chocolate', label: 'شکلات تلخ', priceDelta: 20000, active: true, menuOrder: 1 },
+        { sourceId: 'honey', label: 'نبات', priceDelta: 20000, active: true, menuOrder: 2 },
+        { sourceId: 'retired', label: 'لیمو', priceDelta: 10000, active: false, menuOrder: 3 },
+      ],
+    },
+    {
+      sourceId: 'milk', label: 'نوع شیر', minSelections: 1, maxSelections: 1, active: true, menuOrder: 1,
+      options: [
+        { sourceId: 'regular', label: 'معمولی', priceDelta: 0, active: true, menuOrder: 1 },
+        { sourceId: 'oat', label: 'جو', priceDelta: 25000, active: true, menuOrder: 2 },
+      ],
+    },
+  ],
+};
+/** Same POS shape, sold out: it must render «ناموجود» and never be buyable. */
+export const cafeSoldOut = { ...structuredClone(cafeItem), id: '66666666-6666-4666-8666-666666666666', title: 'لیموناد', slug: 'cafe-item-lemonade', price: 230000, inventory: 0, menuAvailability: 'sold_out', menuOrder: 1, modifierGroups: [] };
 const posts = [{ id: 'post-1', title: 'داستان قهوه', slug: 'coffee-story', _status: 'published', publishedAt: '2024-05-02T10:00:00Z', updatedAt: '2024-05-02T10:00:00Z', meta: { description: 'خلاصه مقاله' }, content: { root: { type: 'root', direction: 'rtl', children: [{ type: 'paragraph', children: [{ type: 'text', text: 'متن مقاله' }] }] } } }];
 export const allBlocks = [
   { blockType: 'content', columns: [{ size: 'half', richText: { root: { children: [{ type: 'paragraph', children: [{ type: 'text', text: 'متن ستون' }] }] } } }] },
@@ -31,9 +57,11 @@ const forms = [{ id: 'form-1', title: 'تماس با ما', fields: [{ id: 'f1',
 export const order = { id: ORDER_ID, site: SITE_ID, reference: 'AB123', status: 'pending', currency: 'IRT', buyer: { name: 'علی رضایی', phone: '09121234567', note: 'یادداشت خریدار' }, items: [{ productTitle: 'قهوه اول', variationLabel: 'بزرگ', quantity: 2, unitPrice: 180000, subtotal: 360000, total: 360000 }, { productTitle: 'قهوه دوم', quantity: 1, unitPrice: 120000, subtotal: 120000, total: 120000 }], subtotal: 480000, discountTotal: 20000, shippingTotal: 30000, taxTotal: 10000, fees: [{ label: 'بسته‌بندی', total: 5000 }], total: 505000, coupons: [{ code: 'WELCOME', discount: 20000 }], productTitle: 'قهوه اول', quantity: 2, unitPrice: 180000 };
 
 export async function startMockCms() {
-  const state = { requests: [], checkouts: [], forms: [], mode: 'confirmation', unavailable: false, siteCalls: 0, orderReads: 0, hosts: [] };
+  const state = { requests: [], checkouts: [], forms: [], mode: 'confirmation', unavailable: false, siteCalls: 0, orderReads: 0, hosts: [], cafe: false };
   const site = { ...structuredClone(demoSite), blocks: ['content','mediaBlock','cta','features','testimonials','faq','contact','formBlock','productGrid','pricing','logos','gallery','team','archive'], id: SITE_ID, name: 'کافه آزمایشی', domain: 'shop.example', defaultLocale: 'fa', availableLocales: ['fa', 'en'], branding: { displayName: 'کافه آزمایشی', tagline: 'طعم خوب زندگی' }, store: { currency: 'IRT', paymentProvider: 'bank' }, themeRuntime: { settings: { menuTitle: 'منوی قهوه', slogan: 'طعم خوب\nبرای لحظه‌ها\nقهوه تازه\nبرای شما' }, bindings: { home: { id: 'home-id', type: 'page', slug: 'خانه', title: 'خانه' } } }, payments: { currency: 'IRT', methods: [{ id: 'test-psp', label: 'درگاه آزمایشی', labelEn: 'Test gateway', mode: 'sandbox', kind: 'psp' }] } };
   const home = { id: 'home-id', title: 'خانه', slug: 'home', _status: 'published', layout: [{ blockType: 'productGrid', populateBy: 'selection', products: [PRODUCT_ID, variable.id], showBuyButton: true, limit: 2 }, ...allBlocks, { blockType: 'unknownFutureBlock' }] };
+  // Written by the café tests only, so the plain-store fixtures above stay untouched.
+  const cafeHome = { id: 'home-id', title: 'خانه', slug: 'home', _status: 'published', layout: [{ blockType: 'productGrid', mode: 'cafe', populateBy: 'collection', limit: 24, showBuyButton: true }] };
   const server = http.createServer(async (req, res) => {
     const url = new URL(req.url, 'http://cms.internal');
     state.requests.push({ path: url.pathname + url.search, authorization: req.headers.authorization, host: req.headers.host });
@@ -57,8 +85,8 @@ export async function startMockCms() {
     const collection = url.pathname.split('/')[2];
     if (['pages', 'posts', 'products'].includes(collection) && url.searchParams.get('where[_status][equals]') !== 'published') return send({ message: 'Missing published filter' }, 400);
     let docs = [];
-    if (collection === 'pages') docs = url.searchParams.get('where[slug][equals]') === 'about' ? [{ id: 'about-id', slug: 'about', title: 'درباره ما', _status: 'published', layout: allBlocks }] : [home];
-    if (collection === 'products') docs = [simple, variable, { id: 'external-id', title: 'محصول خارجی', slug: 'external', price: 1000, productType: 'external', externalUrl: 'https://example.com/buy', _status: 'published' }, { id: 'grouped-id', title: 'گروه', slug: 'grouped', price: 1000, productType: 'grouped', groupedProducts: [simple], _status: 'published' }];
+    if (collection === 'pages') docs = url.searchParams.get('where[slug][equals]') === 'about' ? [{ id: 'about-id', slug: 'about', title: 'درباره ما', _status: 'published', layout: allBlocks }] : [state.cafe ? cafeHome : home];
+    if (collection === 'products') docs = state.cafe ? [cafeSoldOut, cafeItem] : [simple, variable, { id: 'external-id', title: 'محصول خارجی', slug: 'external', price: 1000, productType: 'external', externalUrl: 'https://example.com/buy', _status: 'published' }, { id: 'grouped-id', title: 'گروه', slug: 'grouped', price: 1000, productType: 'grouped', groupedProducts: [simple], _status: 'published' }];
     if (collection === 'posts') docs = posts;
     if (collection === 'forms') docs = forms;
     if (collection === 'search') docs = [{ title: posts[0].title, doc: { relationTo: 'posts', value: 'post-1' } }];
