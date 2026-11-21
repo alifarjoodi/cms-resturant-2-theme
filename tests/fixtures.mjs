@@ -55,9 +55,11 @@ export const allBlocks = [
 ];
 const forms = [{ id: 'form-1', title: 'تماس با ما', fields: [{ id: 'f1', blockType: 'text', name: 'name', label: 'نام', required: true }, { id: 'f2', blockType: 'email', name: 'email', label: 'ایمیل', required: true }, { id: 'f3', blockType: 'textarea', name: 'message', label: 'پیام' }, { id: 'f4', blockType: 'checkbox', name: 'consent', label: 'موافقم' }], confirmationType: 'message', confirmationMessage: { root: { children: [{ type: 'paragraph', children: [{ type: 'text', text: 'پیام دریافت شد' }] }] } } }];
 export const order = { id: ORDER_ID, site: SITE_ID, reference: 'AB123', status: 'pending', currency: 'IRT', buyer: { name: 'علی رضایی', phone: '09121234567', note: 'یادداشت خریدار' }, items: [{ productTitle: 'قهوه اول', variationLabel: 'بزرگ', quantity: 2, unitPrice: 180000, subtotal: 360000, total: 360000 }, { productTitle: 'قهوه دوم', quantity: 1, unitPrice: 120000, subtotal: 120000, total: 120000 }], subtotal: 480000, discountTotal: 20000, shippingTotal: 30000, taxTotal: 10000, fees: [{ label: 'بسته‌بندی', total: 5000 }], total: 505000, coupons: [{ code: 'WELCOME', discount: 20000 }], productTitle: 'قهوه اول', quantity: 2, unitPrice: 180000 };
+/** The same order after the café rejected it: paid state untouched, fulfilment separate. */
+export const rejectedCafeOrder = { ...order, cafe: { fulfillment: 'rejected', fulfillmentAt: '2026-11-21T14:39:26.368Z', serviceMode: 'dine_in', tableLabel: 'میز ۸', paymentChoice: 'counter' } };
 
 export async function startMockCms() {
-  const state = { requests: [], checkouts: [], forms: [], mode: 'confirmation', unavailable: false, siteCalls: 0, orderReads: 0, hosts: [], cafe: false };
+  const state = { requests: [], checkouts: [], forms: [], mode: 'confirmation', unavailable: false, siteCalls: 0, orderReads: 0, hosts: [], cafe: false, orderDoc: order };
   const site = { ...structuredClone(demoSite), blocks: ['content','mediaBlock','cta','features','testimonials','faq','contact','formBlock','productGrid','pricing','logos','gallery','team','archive'], id: SITE_ID, name: 'کافه آزمایشی', domain: 'shop.example', defaultLocale: 'fa', availableLocales: ['fa', 'en'], branding: { displayName: 'کافه آزمایشی', tagline: 'طعم خوب زندگی' }, store: { currency: 'IRT', paymentProvider: 'bank' }, themeRuntime: { settings: { menuTitle: 'منوی قهوه', slogan: 'طعم خوب\nبرای لحظه‌ها\nقهوه تازه\nبرای شما' }, bindings: { home: { id: 'home-id', type: 'page', slug: 'خانه', title: 'خانه' } } }, payments: { currency: 'IRT', methods: [{ id: 'test-psp', label: 'درگاه آزمایشی', labelEn: 'Test gateway', mode: 'sandbox', kind: 'psp' }] } };
   const home = { id: 'home-id', title: 'خانه', slug: 'home', _status: 'published', layout: [{ blockType: 'productGrid', populateBy: 'selection', products: [PRODUCT_ID, variable.id], showBuyButton: true, limit: 2 }, ...allBlocks, { blockType: 'unknownFutureBlock' }] };
   // Written by the café tests only, so the plain-store fixtures above stay untouched.
@@ -91,7 +93,7 @@ export async function startMockCms() {
     if (collection === 'forms') docs = forms;
     if (collection === 'search') docs = [{ title: posts[0].title, doc: { relationTo: 'posts', value: 'post-1' } }];
     if (collection === 'store') docs = [{ currency: 'IRT', paymentInstructions: 'پرداخت کارت به کارت با هماهنگی فروشگاه' }];
-    if (collection === 'orders') { state.orderReads++; docs = [order]; }
+    if (collection === 'orders') { state.orderReads++; docs = [state.orderDoc]; }
     if (collection === 'redirects' && url.searchParams.get('where[from][equals]') === '/old-menu') docs = [{ from: '/old-menu', to: { type: 'custom', url: '/products/coffee' } }];
     if (url.searchParams.has('site')) docs = [];
     if (collection === 'header') docs = [{ navItems: [{ link: { type: 'custom', label: 'منو', url: '/products' } }] }];
