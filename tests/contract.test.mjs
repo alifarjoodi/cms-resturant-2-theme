@@ -195,6 +195,20 @@ test('a café cart reaches the CMS unchanged and still carries no credential', a
   assert.equal(write.headers.host, new URL(base).host, 'the visitor host is what scopes the tenant');
 });
 
+test('a table QR lands on the menu: /menu serves the poster and keeps the token', async (t) => {
+  const { base } = await running(t);
+  const response = await fetch(`${base}/menu?tableToken=table-7-abc123`);
+  assert.equal(response.status, 200);
+  const html = await response.text();
+  assert.ok(html.includes('data-menu-count='), 'the poster, not a content page');
+  const data = JSON.parse(html.match(/<script type="application\/json" id="theme-data">(.*?)<\/script>/s)[1]);
+  assert.equal(data.tableToken, 'table-7-abc123');
+  // A page the site really defines still wins over the alias.
+  assert.equal((await fetch(`${base}/about`)).status, 200);
+  // A non-store site has no menu alias.
+  assert.equal((await fetch(`${base}/menu`)).status, 200);
+});
+
 test('browser assets are versioned by content and every served file is in the image', async (t) => {
   const { asset, assetVersion, staticFilesList } = await import('../src/assets.js');
   assert.match(assetVersion, /^[0-9a-f]{10}$/);
