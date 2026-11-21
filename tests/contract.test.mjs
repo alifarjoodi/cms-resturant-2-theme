@@ -194,6 +194,17 @@ test('a café cart reaches the CMS unchanged and still carries no credential', a
   assert.equal(write.headers.cookie, undefined);
 });
 
+test('browser assets are versioned by content and every served file is in the image', async (t) => {
+  const { asset, assetVersion, staticFilesList } = await import('../src/assets.js');
+  assert.match(assetVersion, /^[0-9a-f]{10}$/);
+  assert.equal(asset('app.js'), `/app.js?v=${assetVersion}`);
+  const { base } = await running(t);
+  const html = await (await fetch(`${base}/`)).text();
+  for (const file of staticFilesList) assert.ok(html.includes(`${asset(file)}`), `${file} must carry the version`);
+  // The version is part of the URL, so a deploy cannot pair new HTML with a cached script.
+  assert.equal((await fetch(`${base}/app.js?v=${assetVersion}`)).status, 200);
+});
+
 test('variable products use stable keys, own prices and stock; external/grouped are not purchasable', () => {
   const site = { store: { currency: 'IRT' }, media: { origin: 'https://shop.example' }, defaultLocale: 'fa' };
   const p = productViewModel(variable, site, 'fa', 0);

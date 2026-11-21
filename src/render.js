@@ -7,6 +7,7 @@ import { productViewModel } from './products.js';
 import { documentPath, pathFor, publicOrigin } from './routing.js';
 import { renderBlock } from './blocks.js';
 import { renderReceipt } from './receipt.js';
+import { asset } from './assets.js';
 
 const template = await readFile(new URL('../index.html', import.meta.url), 'utf8');
 const manifest = JSON.parse(await readFile(new URL('../eshobe.theme.json', import.meta.url), 'utf8'));
@@ -42,8 +43,8 @@ export function shell(ctx, content, { title, description = '', bodyClass = '', n
     ${og && !noindex ? `<meta property="og:image" content="${e(new URL(og, origin).href)}"><meta name="twitter:card" content="summary_large_image">` : ''}
     ${favicon ? `<link rel="icon" href="${e(favicon)}">` : ''}
     <link rel="preload" href="/public/fonts/vazirmatn-${locale === 'fa' ? 'arabic' : 'latin'}-400-normal.woff" as="font" type="font/woff" crossorigin>
-    <link rel="stylesheet" href="/style.css"><link rel="stylesheet" href="/cms.css">
-    <style>${themeCss(site.theme)}</style><script src="/money.js"></script><script src="/app.js" defer></script>
+    <link rel="stylesheet" href="${asset('style.css')}"><link rel="stylesheet" href="${asset('cms.css')}">
+    <style>${themeCss(site.theme)}</style><script src="${asset('money.js')}"></script><script src="${asset('app.js')}" defer></script>
     ${jsonLd ? `<script type="application/ld+json">${jsonScript(jsonLd)}</script>` : ''}`;
   return template.replace('{{HEAD}}', head).replace('{{LANG}}', e(locale)).replace('{{DIR}}', dirFor(locale)).replace('{{BODY_CLASS}}', e(bodyClass)).replace('{{CONTENT}}', content);
 }
