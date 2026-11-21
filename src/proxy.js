@@ -1,8 +1,48 @@
 import { Readable } from 'node:stream';
+import http from 'node:http';
+import https from 'node:https';
 import { readBody } from './security.js';
 
 const reads = new Set(['site', 'pages', 'posts', 'products', 'categories', 'menus', 'header', 'footer', 'store', 'theme', 'media', 'search', 'forms', 'comments', 'content-type-definitions', 'content-entries', 'taxonomy-definitions', 'taxonomy-terms', 'entry-term-relations', 'content-relations']);
 const writes = new Set(['checkout', 'form-submissions']);
+
+/**
+ * A POST whose `Host` header actually arrives.
+ *
+ * `fetch()` cannot carry one: `Host` is a *forbidden request header* in the Fetch
+ * standard, and undici follows the spec by dropping it and deriving the header
+ * from the URL. That silently rewrote every visitor write to the CMS's own host,
+ * so checkout answered `unknown host` and no storefront order ever reached the
+ * CMS — from a theme whose comment says "visitor writes are Host-scoped".
+ *
+ * `node:http` sends what it is given. Visitor writes are small JSON, so buffering
+ * the answer is fine here; media reads keep streaming through `fetch`.
+ */
+const writeWithHost = (target, { method, headers, body, timeoutMs = 25_000 }) =>
+  new Promise((resolve, reject) => {
+    const url = new URL(target);
+    const transport = url.protocol === 'https:' ? https : http;
+    const payload = body ? Buffer.from(body) : null;
+    const request = transport.request({
+      protocol: url.protocol,
+      hostname: url.hostname,
+      port: url.port || (url.protocol === 'https:' ? 443 : 80),
+      path: `${url.pathname}${url.search}`,
+      method,
+      headers: { ...headers, ...(payload ? { 'content-length': String(payload.length) } : {}) },
+      timeout: timeoutMs,
+    }, (response) => {
+      const chunks = [];
+      response.on('data', (chunk) => chunks.push(chunk));
+      response.on('end', () =>
+        resolve({ status: response.statusCode || 502, headers: response.headers, body: Buffer.concat(chunks) }),
+      );
+    });
+    request.on('timeout', () => request.destroy(new Error('upstream timeout')));
+    request.on('error', reject);
+    if (payload) request.write(payload);
+    request.end();
+  });
 
 export function cmsOwnedApi(pathname, method) {
   if (pathname === '/api/health' || pathname === '/api/revalidate') return false;
@@ -48,6 +88,18 @@ export async function proxyApi(req, res, url, config, site) {
   if (req.headers['accept-language']) headers['accept-language'] = req.headers['accept-language'];
   if (req.headers['user-agent']) headers['user-agent'] = req.headers['user-agent'];
   try {
+    if (isWrite) {
+      // Host-scoped by construction: see writeWithHost above.
+      const upstream = await writeWithHost(`${config.cmsUrl}${url.pathname}${url.search}`, { method: req.method, headers, body });
+      const output = { 'cache-control': 'no-store' };
+      for (const name of ['content-type', 'location', 'retry-after', 'etag', 'last-modified', 'pragma']) {
+        const value = upstream.headers[name];
+        if (value) output[name] = value;
+      }
+      res.writeHead(upstream.status, output);
+      res.end(req.method === 'HEAD' ? undefined : upstream.body);
+      return true;
+    }
     const upstream = await fetch(`${config.cmsUrl}${url.pathname}${url.search}`, {
       method: req.method, headers, body, redirect: 'manual', signal: AbortSignal.timeout(25_000),
     });

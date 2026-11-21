@@ -192,6 +192,7 @@ test('a café cart reaches the CMS unchanged and still carries no credential', a
   assert.deepEqual(write.body, body);
   assert.equal(write.headers.authorization, undefined);
   assert.equal(write.headers.cookie, undefined);
+  assert.equal(write.headers.host, new URL(base).host, 'the visitor host is what scopes the tenant');
 });
 
 test('browser assets are versioned by content and every served file is in the image', async (t) => {
@@ -275,7 +276,11 @@ test('visitor writes preserve Host, never carry key/cookies, and reject proxy lo
   const response = await fetch(`${base}/api/checkout`, { method: 'POST', headers: { 'content-type': 'application/json', cookie: 'payload-token=private', authorization: 'Bearer visitor-private' }, body: JSON.stringify(body) });
   assert.equal(response.status, 200);
   const write = cms.state.checkouts[0]; assert.deepEqual(write.body, body);
-  assert.equal(write.headers.authorization, undefined); assert.equal(write.headers.cookie, undefined); assert.equal(write.headers.host, new URL(cms.origin).host);
+  assert.equal(write.headers.authorization, undefined); assert.equal(write.headers.cookie, undefined);
+  // The CMS resolves the tenant from Host, so the *visitor's* host is what must
+  // arrive — not the CMS's own. `fetch` silently drops an explicit Host header,
+  // which is why this is asserted and not assumed.
+  assert.equal(write.headers.host, new URL(base).host);
   assert.equal((await fetch(`${base}/api/checkout`, { method: 'POST', headers: { 'x-eshobe-theme-proxy': '1' }, body: '{}' })).status, 508);
   assert.equal((await fetch(`${base}/api/orders`)).status, 404);
   assert.equal((await fetch(`${base}/api/products?draft=true`)).status, 400);
