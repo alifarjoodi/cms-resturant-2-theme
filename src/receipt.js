@@ -24,13 +24,34 @@ export async function renderReceipt(ctx, orderId, params) {
     } catch { /* Payment instructions are optional; do not expose an internal error. */ }
   }
   const status = t[order.status] || order.status;
-  const body = `<article class="receipt"><div class="receipt__status" data-status="${e(order.status)}">${e(status)}</div>
-    <p>${e(order.status === 'paid' ? t.paidNote : t.pendingNote)}</p>
+  // A café order is two axes. The payment status says whether the money was
+  // taken; the fulfilment says what the café did with it. A rejected order is
+  // still `pending` — telling the guest "awaiting payment" there is wrong.
+  const cafe = order.cafe && typeof order.cafe === 'object' ? order.cafe : null;
+  const fulfilment = typeof cafe?.fulfillment === 'string' ? cafe.fulfillment : null;
+  const fulfilmentLabel = {
+    awaiting_approval: t.fulfilAwaiting,
+    accepted: t.fulfilAccepted,
+    preparing: t.fulfilPreparing,
+    ready: t.fulfilReady,
+    served: t.fulfilServed,
+    rejected: t.fulfilRejected,
+    cancelled: t.fulfilCancelled,
+  }[fulfilment] || null;
+  const serviceLabel = cafe?.serviceMode === 'dine_in'
+    ? `${t.dineIn}${cafe.tableLabel ? ` — ${cafe.tableLabel}` : ''}`
+    : cafe?.serviceMode === 'takeaway' ? t.takeaway : null;
+  const cafeNote = fulfilment === 'rejected' ? t.rejectedNote
+    : fulfilment === 'cancelled' ? t.cancelledNote
+    : fulfilment === 'awaiting_approval' ? t.awaitingNote
+    : order.status === 'paid' ? t.paidNote : t.pendingNote;
+  const body = `<article class="receipt"><div class="receipt__status" data-status="${e(order.status)}"${fulfilment ? ` data-fulfilment="${e(fulfilment)}"` : ''}>${e(status)}</div>
+    <p>${e(cafeNote)}</p>
     ${params.get('m') === 'failed' ? `<p class="notice notice--error">${e(t.failedPayment)}</p>` : ''}
-    <dl>${row(t.reference, toLocaleDigits(String(order.reference || order.id), locale))}${row(t.status, status)}${order.createdAt ? row(ctx.locale === 'fa' ? 'تاریخ' : 'Date', formatDate(order.createdAt, locale)) : ''}${row(t.name, order.buyer?.name)}${row(t.phone, toLocaleDigits(order.buyer?.phone || '', locale))}</dl>
+    <dl>${row(t.reference, toLocaleDigits(String(order.reference || order.id), locale))}${row(t.status, status)}${fulfilmentLabel ? row(t.fulfillment, fulfilmentLabel) : ''}${serviceLabel ? row(t.serviceMode, serviceLabel) : ''}${order.createdAt ? row(ctx.locale === 'fa' ? 'تاریخ' : 'Date', formatDate(order.createdAt, locale)) : ''}${row(t.name, order.buyer?.name)}${row(t.phone, toLocaleDigits(order.buyer?.phone || '', locale))}</dl>
     <div class="receipt-lines">${items.map((item) => `<div class="receipt-line"><div><strong>${e(item.productTitle)}</strong>${item.variationLabel ? `<small>${e(item.variationLabel)}</small>` : ''}<small>${e(t.quantity)}: ${e(formatNumber(item.quantity, locale))} · ${e(money(item.unitPrice))}</small></div><strong>${e(money(item.total ?? item.subtotal))}</strong></div>`).join('')}</div>
     <dl class="receipt-totals">${row(t.subtotal, money(order.subtotal))}${Number(order.discountTotal) ? row(`${t.discount}${order.coupons?.length ? ` (${order.coupons.map((c) => c.code).join(', ')})` : ''}`, `−${money(order.discountTotal)}`) : ''}${Number(order.shippingTotal) ? row(t.shipping, money(order.shippingTotal)) : ''}${Number(order.taxTotal) ? row(t.tax, money(order.taxTotal)) : ''}${(order.fees ?? []).map((fee) => row(fee.label || fee.name || t.fees, money(fee.total))).join('')}${row(t.total, money(order.total), 'receipt-total')}</dl>
-    ${order.status !== 'paid' && instructions ? `<section class="receipt-instructions"><h2>${e(t.instructions)}</h2><p>${e(instructions)}</p></section>` : ''}
+    ${order.status !== 'paid' && instructions && fulfilment !== 'rejected' && fulfilment !== 'cancelled' ? `<section class="receipt-instructions"><h2>${e(t.instructions)}</h2><p>${e(instructions)}</p></section>` : ''}
     ${order.buyer?.note ? `<section class="receipt-instructions"><h2>${e(t.note)}</h2><p>${e(order.buyer.note)}</p></section>` : ''}
   </article>`;
   return { body, title: t.receipt };

@@ -13,7 +13,7 @@ import { productViewModel, availability } from '../src/products.js';
 import { activeModifierGroups, isTableToken, menuGroupsFor, menuSort, menuState, needsCart } from '../src/menu.js';
 import { lexical } from '../src/lexical.js';
 import { createApp } from '../server.js';
-import { startMockCms, API_KEY, SITE_ID, REVALIDATE_SECRET, RECEIPT_SECRET, ORDER_ID, PRODUCT_ID, variable, cafeItem, cafeSoldOut, allBlocks } from './fixtures.mjs';
+import { startMockCms, API_KEY, SITE_ID, REVALIDATE_SECRET, RECEIPT_SECRET, ORDER_ID, PRODUCT_ID, variable, cafeItem, cafeSoldOut, rejectedCafeOrder, allBlocks } from './fixtures.mjs';
 
 async function running(t, options = {}) {
   const cms = await startMockCms();
@@ -309,6 +309,23 @@ test('signed receipt renders every line, exact totals, instructions and no-store
   for (const value of ['قهوه اول', 'قهوه دوم', 'بزرگ', '۴۸۰٬۰۰۰ تومان', '۲۰٬۰۰۰ تومان', '۳۰٬۰۰۰ تومان', '۱۰٬۰۰۰ تومان', '۵٬۰۰۰ تومان', '۵۰۵٬۰۰۰ تومان', 'پرداخت کارت به کارت']) assert.ok(html.includes(value), value);
   assert.ok(html.includes('noindex,nofollow')); assert.equal(cms.state.orderReads, 1);
 });
+test('a rejected café order says so on the receipt instead of asking for payment', async (t) => {
+  const { base, cms } = await running(t);
+  cms.state.orderDoc = rejectedCafeOrder;
+  const signature = receiptSignature(RECEIPT_SECRET, SITE_ID, ORDER_ID);
+  const html = await (await fetch(`${base}/checkout/${ORDER_ID}?r=${signature}`)).text();
+  // The page carries every UI string to the client, so assert on the receipt itself.
+  const start = html.indexOf('<article class="receipt"');
+  const receipt = html.slice(start, html.indexOf('</article>', start));
+  assert.ok(receipt.includes('data-fulfilment="rejected"'));
+  assert.ok(receipt.includes('پذیرفته نشد'), 'the fulfilment word');
+  assert.ok(receipt.includes('بازمی‌گرداند'), 'the refund sentence');
+  assert.ok(receipt.includes('میز ۸'), 'the table label');
+  // The payment wording and its instructions must not invite a payment the café refused.
+  assert.ok(!receipt.includes('هنوز پرداخت نشده است'));
+  assert.ok(!receipt.includes('پرداخت کارت به کارت'));
+});
+
 test('suspended site serves holding page on every content path without content', async (t) => {
   const { base, client } = await running(t); const site = await client.getSite(); site.status = 'suspended';
   const response = await fetch(`${base}/en/products/coffee`); const html = await response.text();
