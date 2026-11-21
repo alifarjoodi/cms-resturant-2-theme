@@ -25,6 +25,17 @@ assert.ok(clientSource.includes('Authorization: `Bearer ${this.config.apiKey}`')
 assert.ok(!clientSource.includes('headers: { Host:'));
 const proxySource = await readFile('src/proxy.js', 'utf8');
 assert.ok(!proxySource.includes('config.apiKey'));
+// Every file the server serves itself must exist in the image: a file that is
+// missing from the Dockerfile 404s only in production, where the page still
+// renders and only a feature is quietly absent.
+const dockerfile = await readFile('Dockerfile', 'utf8');
+const copyLine = dockerfile.split('\n').find((line) => line.includes(' app.js '));
+assert.ok(copyLine, 'Dockerfile must copy the browser assets');
+const { staticFilesList } = await import('../src/assets.js');
+for (const file of staticFilesList) {
+  assert.ok((await access(file).then(() => true, () => false)), `${file} is served but missing from the build context`);
+  assert.ok(copyLine.includes(` ${file} `), `Dockerfile does not copy ${file}`);
+}
 for (const type of ['store', 'business', 'portfolio']) assert.ok(blockSlugsForSiteType(type).length);
 await access('public/fonts/LICENSE');
 console.log('Manifest, contract, source syntax, credential boundaries and font licence checks passed.');
