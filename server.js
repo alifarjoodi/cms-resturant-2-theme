@@ -144,17 +144,22 @@ export function createApp({ env = process.env, client: injectedClient, fetchImpl
       const output = await renderContent(ctx, { heading: ctx.t.menu, body, pagination: paginationHtml(ctx, result, url.searchParams) });
       return html(res, 200, injectProducts(output, ctx, views), req);
     }
-    const page = route.slug === 'home' ? await client.getHomePage(ctx.site, ctx.locale) : await client.bySlug('pages', route.slug, ctx.locale, { depth: 2 });
+    // A table QR prints `/menu` (the POS's tableQrLink), and for a café the menu
+    // *is* the home poster. Serve the poster there rather than a 404, but only
+    // when the site did not define its own `menu` page — a real page wins.
+    let page = route.slug === 'home' ? await client.getHomePage(ctx.site, ctx.locale) : await client.bySlug('pages', route.slug, ctx.locale, { depth: 2 });
+    const menuAlias = !page && route.slug === 'menu' && ctx.site.type === 'store';
+    if (menuAlias) page = await client.getHomePage(ctx.site, ctx.locale);
     if (page) {
       ctx.alternates = await alternatesFor(ctx, page);
-      if (route.slug === 'home' && ctx.site.type === 'store') {
+      if ((route.slug === 'home' || menuAlias) && ctx.site.type === 'store') {
         const output = await renderHome(ctx, page);
         return html(res, 200, output, req);
       }
       return html(res, 200, await renderBlocksPage(ctx, page), req);
     }
     const hasHomeBinding = Object.prototype.hasOwnProperty.call(ctx.site.themeRuntime?.bindings ?? {}, 'home');
-    if (route.slug === 'home' && ctx.site.type === 'store' && !hasHomeBinding) return html(res, 200, await renderHome(ctx, null), req);
+    if ((route.slug === 'home' || route.slug === 'menu') && ctx.site.type === 'store' && !hasHomeBinding) return html(res, 200, await renderHome(ctx, null), req);
     return html(res, 404, renderError(ctx, 404, ctx.t.notFound), req);
   }
 
