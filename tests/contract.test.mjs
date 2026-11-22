@@ -326,6 +326,37 @@ test('a rejected café order says so on the receipt instead of asking for paymen
   assert.ok(!receipt.includes('پرداخت کارت به کارت'));
 });
 
+test('visitor writes are logged with their status so a lost order is traceable', async (t) => {
+  const { base, cms } = await running(t);
+  const lines = [];
+  const original = console.log;
+  console.log = (...args) => { lines.push(args.join(' ')); original(...args); };
+  t.after(() => { console.log = original; });
+  const body = { product: PRODUCT_ID, quantity: 1, name: 'علی', phone: '09121234567', company: '' };
+  assert.equal((await fetch(`${base}/api/checkout`, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(body) })).status, 200);
+  const written = lines.filter((line) => line.includes('"visitor_write"')).map((line) => JSON.parse(line));
+  assert.equal(written.length, 1);
+  assert.equal(written[0].status, 200);
+  assert.equal(written[0].path, '/api/checkout');
+  assert.equal(written[0].orderId, ORDER_ID);
+  // The buyer is never in the log line.
+  assert.ok(!lines.join(' ').includes('09121234567'));
+  assert.ok(!lines.join(' ').includes('علی'));
+});
+
+test('a menu entry point logs the host and whether a table token arrived', async (t) => {
+  const { base } = await running(t);
+  const lines = [];
+  const original = console.log;
+  console.log = (...args) => { lines.push(args.join(' ')); original(...args); };
+  t.after(() => { console.log = original; });
+  await fetch(`${base}/menu?tableToken=table-7-abc123`);
+  const view = lines.filter((line) => line.includes('"menu_view"')).map((line) => JSON.parse(line));
+  assert.equal(view.length, 1);
+  assert.equal(view[0].path, '/menu');
+  assert.equal(view[0].tableToken, 'present');
+});
+
 test('suspended site serves holding page on every content path without content', async (t) => {
   const { base, client } = await running(t); const site = await client.getSite(); site.status = 'suspended';
   const response = await fetch(`${base}/en/products/coffee`); const html = await response.text();

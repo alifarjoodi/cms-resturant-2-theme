@@ -75,6 +75,13 @@ export function createApp({ env = process.env, client: injectedClient, fetchImpl
       ctx.locale = ctx.site.defaultLocale; ctx.t = strings(ctx.locale);
       return html(res, 200, renderError(ctx, 200, ctx.t.holding), req, { cache: 'no-store' });
     }
+    // A table QR's first hop lands here. One line per visit to a menu entry point
+    // is what tells us a scan reached *this* deployment, and whether the link
+    // carried a table token at all — a scan that never arrives looks identical to
+    // a checkout that failed, and both are otherwise invisible.
+    if (pathname === '/' || pathname === '/menu') {
+      console.log(JSON.stringify({ event: 'menu_view', host: req.headers.host ?? null, path: pathname, tableToken: ctx.tableToken ? 'present' : 'none' }));
+    }
     const redirect = await client.getRedirect(pathname, ctx.site, ctx.locale || ctx.site.defaultLocale);
     if (redirect) {
       const target = new URL(redirect, 'http://theme.internal');

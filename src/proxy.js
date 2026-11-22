@@ -18,6 +18,31 @@ const writes = new Set(['checkout', 'form-submissions']);
  * `node:http` sends what it is given. Visitor writes are small JSON, so buffering
  * the answer is fine here; media reads keep streaming through `fetch`.
  */
+/**
+ * One line per visitor write, so a submission that does not become an order can
+ * be found instead of guessed at.
+ *
+ * The status is the whole point: a `400` says the CMS refused it (with its own
+ * Persian message), a `200` names the order it created, and *no line at all*
+ * says the device never reached this deployment — three different failures that
+ * used to look identical from the outside.
+ *
+ * Nothing about the buyer is logged: no body, no name, no phone, no cookie.
+ */
+const logVisitorWrite = ({ host, path, status, ms, body }) => {
+  const summary = { event: 'visitor_write', host, path, status, ms };
+  let parsed;
+  try { parsed = body?.length ? JSON.parse(body.toString('utf8')) : null; } catch { parsed = null; }
+  if (status >= 200 && status < 300) {
+    if (parsed?.orderId) summary.orderId = String(parsed.orderId);
+    if (parsed?.reference) summary.reference = String(parsed.reference);
+    if (parsed?.retry === true) summary.retry = true;
+  } else if (parsed?.message) {
+    summary.message = String(parsed.message).replace(/\s+/g, ' ').slice(0, 200);
+  }
+  console.log(JSON.stringify(summary));
+};
+
 const writeWithHost = (target, { method, headers, body, timeoutMs = 25_000 }) =>
   new Promise((resolve, reject) => {
     const url = new URL(target);
@@ -90,7 +115,12 @@ export async function proxyApi(req, res, url, config, site) {
   try {
     if (isWrite) {
       // Host-scoped by construction: see writeWithHost above.
+      const startedAt = Date.now();
       const upstream = await writeWithHost(`${config.cmsUrl}${url.pathname}${url.search}`, { method: req.method, headers, body });
+      logVisitorWrite({
+        host: headers.Host, path: url.pathname, status: upstream.status,
+        ms: Date.now() - startedAt, body: upstream.body,
+      });
       const output = { 'cache-control': 'no-store' };
       for (const name of ['content-type', 'location', 'retry-after', 'etag', 'last-modified', 'pragma']) {
         const value = upstream.headers[name];
@@ -111,6 +141,7 @@ export async function proxyApi(req, res, url, config, site) {
     if (req.method === 'HEAD' || !upstream.body) res.end();
     else Readable.fromWeb(upstream.body).pipe(res);
   } catch {
+    if (isWrite) console.log(JSON.stringify({ event: 'visitor_write', host: headers.Host, path: url.pathname, status: 'unreachable' }));
     if (!res.headersSent) res.writeHead(503, { 'content-type': 'application/json; charset=utf-8', 'retry-after': '10', 'cache-control': 'no-store' });
     res.end(JSON.stringify({ ok: false, message: 'ارتباط با فروشگاه برقرار نشد. لطفاً دوباره تلاش کنید.' }));
   }
