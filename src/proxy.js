@@ -37,6 +37,10 @@ const logVisitorWrite = ({ host, path, status, ms, body }) => {
     if (parsed?.orderId) summary.orderId = String(parsed.orderId);
     if (parsed?.reference) summary.reference = String(parsed.reference);
     if (parsed?.retry === true) summary.retry = true;
+    // A 200 that names no order is the honeypot drop: `{ok:true, message:'ثبت شد.'}`.
+    if (!parsed?.orderId && parsed?.message) {
+      summary.message = String(parsed.message).replace(/\s+/g, ' ').slice(0, 200);
+    }
   } else if (parsed?.message) {
     summary.message = String(parsed.message).replace(/\s+/g, ' ').slice(0, 200);
   }
