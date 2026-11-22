@@ -79,7 +79,8 @@ export async function startMockCms() {
       const confirmationUrl = `/fa/checkout/${ORDER_ID}?r=${receiptSignature(RECEIPT_SECRET, SITE_ID, ORDER_ID)}`;
       if (state.mode === 'pending') return send({ ok: true, pending: true, confirmationUrl, message: 'درگاه پیکربندی نشده است.' }, 503);
       if (state.mode === 'redirect') return send({ ok: true, redirectUrl: 'https://psp.example/pay/test', confirmationUrl });
-      return send({ ok: true, redirectUrl: null, confirmationUrl });
+      // Mirrors the real counter response: identity travels with the success.
+      return send({ ok: true, orderId: ORDER_ID, reference: 'AB123', redirectUrl: null, confirmationUrl, message: 'سفارش شما ثبت شد.' });
     }
     if (url.pathname === '/api/form-submissions') { let raw = ''; for await (const c of req) raw += c; state.forms.push(JSON.parse(raw)); return send({ message: 'پیام دریافت شد' }); }
     if (url.pathname === '/api/media/file/coffee.png') { res.setHeader('content-type', 'image/png'); return res.end(Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAusB9Wl6xl8AAAAASUVORK5CYII=', 'base64')); }
