@@ -357,6 +357,17 @@ test('a menu entry point logs the host and whether a table token arrived', async
   assert.equal(view[0].tableToken, 'present');
 });
 
+test('the checkout form cannot be autofilled into a silent drop', async (t) => {
+  const { base, cms } = await running(t);
+  const html = await (await fetch(`${base}/`)).text();
+  // The CMS's honeypot is a field named `company`: an autofilled one answers
+  // «ثبت شد.» and writes nothing. The theme must not render that field at all.
+  assert.ok(!html.includes('name="company"'), 'no company field in the checkout form');
+  const body = { product: PRODUCT_ID, quantity: 1, name: 'علی', phone: '09121234567', company: '' };
+  await fetch(`${base}/api/checkout`, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(body) });
+  assert.equal(cms.state.checkouts.at(-1).body.company, '');
+});
+
 test('suspended site serves holding page on every content path without content', async (t) => {
   const { base, client } = await running(t); const site = await client.getSite(); site.status = 'suspended';
   const response = await fetch(`${base}/en/products/coffee`); const html = await response.text();

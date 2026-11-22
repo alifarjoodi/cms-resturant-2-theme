@@ -140,7 +140,13 @@ export function checkoutHtml(ctx, products) {
     <div class="checkout__summary"><span id="checkout-product"></span><strong id="checkout-price"></strong></div>
     ${ctx.demo ? `<p class="notice">${e(t.demoCheckout)}</p>` : ''}
     <ul class="cart-lines" id="cart-lines" hidden></ul>
-    <form id="checkout-form"><div class="honeypot" aria-hidden="true"><label>Company<input name="company" tabindex="-1" autocomplete="off"></label></div>
+    <form id="checkout-form" data-honeypot="absent">
+      ${/* No `company` input, deliberately. The CMS's anti-bot honeypot is that
+           field name, so a browser or password manager that autofills a form's
+           "company" turns a real order into a silent drop: the CMS answers
+           «ثبت شد.» and writes nothing. A customer's phone autofilled it here and
+           lost a table order. The CMS still range-limits and honeypots direct
+           posters; a visible form should never be able to swallow a real buyer. */ ''}
       <label class="checkout-field" id="checkout-variation-field" hidden>${e(t.variation)}<select name="variation" id="checkout-variation"></select></label>
       <div class="checkout-fields"><label class="checkout-field">${e(t.name)}<input name="name" type="text" required maxlength="200" autocomplete="name"></label><label class="checkout-field">${e(t.phone)}<input name="phone" type="tel" required inputmode="tel" autocomplete="tel" dir="ltr" placeholder="09121234567"></label><label class="checkout-field" id="checkout-quantity-field">${e(t.quantity)}<input name="quantity" type="number" required min="1" max="99" value="1" inputmode="numeric"></label>${field('email', t.email, 'email', 'autocomplete="email" dir="ltr" maxlength="254"')}</div>
       <fieldset class="checkout-methods checkout-service" id="checkout-service" hidden><legend>${e(t.serviceMode)}</legend><div id="service-modes"></div></fieldset>

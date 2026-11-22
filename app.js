@@ -660,6 +660,13 @@
         }
         if (url.origin !== location.origin && url.protocol === 'https:') { window.location.assign(url.href); return; }
         showError(t.error);
+      } else if (result?.ok === true) {
+        // A 200 with nothing to show is not an order. The CMS answers exactly this
+        // shape when its honeypot fires (`{ok:true, message:'ثبت شد.'}`), and
+        // echoing that message is how a buyer is told "registered" for an order
+        // that was never written. Keep the sheet open so it can be retried.
+        console.warn('checkout: ok response without a receipt target', typeof result?.message === 'string' ? result.message.slice(0, 120) : '');
+        showError(t.error);
       } else {
         showError(result?.message || (response.status === 429 ? (data.locale === 'fa' ? 'کمی صبر کنید و دوباره تلاش کنید.' : 'Please wait a moment and try again.') : t.error));
       }
