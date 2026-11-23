@@ -53,6 +53,7 @@ export function strings(locale) {
     fulfilServed: ['سرو شد', 'Served'],
     fulfilCancelled: ['لغو شد', 'Cancelled'],
     rejectedNote: ['این سفارش از سوی کافه پذیرفته نشد. اگر مبلغی پرداخت کرده‌اید، کافه آن را بازمی‌گرداند.', 'The café did not accept this order. If you have paid, the café will refund you.'],
+    rejectionReason: ['دلیل کافه', 'Café’s reason'],
     awaitingNote: ['سفارش شما به کافه رسیده و در انتظار تأیید است.', 'Your order reached the café and is waiting to be accepted.'],
     cancelledNote: ['این سفارش لغو شده است.', 'This order was cancelled.'],
     cartEmpty: ['سبد سفارش خالی است.', 'Your order is empty.'], cartRemove: ['حذف', 'Remove'],

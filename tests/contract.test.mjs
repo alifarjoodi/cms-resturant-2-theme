@@ -321,6 +321,9 @@ test('a rejected café order says so on the receipt instead of asking for paymen
   assert.ok(receipt.includes('پذیرفته نشد'), 'the fulfilment word');
   assert.ok(receipt.includes('بازمی‌گرداند'), 'the refund sentence');
   assert.ok(receipt.includes('میز ۸'), 'the table label');
+  // The café's own words, not just «پذیرفته نشد».
+  assert.ok(receipt.includes('data-rejection-reason'), 'the reason marker');
+  assert.ok(receipt.includes('مواد اولیه تمام شد'), 'the reason itself');
   // The payment wording and its instructions must not invite a payment the café refused.
   assert.ok(!receipt.includes('هنوز پرداخت نشده است'));
   assert.ok(!receipt.includes('پرداخت کارت به کارت'));
