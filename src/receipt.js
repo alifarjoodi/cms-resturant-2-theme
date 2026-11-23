@@ -45,8 +45,15 @@ export async function renderReceipt(ctx, orderId, params) {
     : fulfilment === 'cancelled' ? t.cancelledNote
     : fulfilment === 'awaiting_approval' ? t.awaitingNote
     : order.status === 'paid' ? t.paidNote : t.pendingNote;
+  // The café's own words. «پذیرفته نشد» alone leaves the guest guessing whether
+  // the item was sold out or the order was a mistake — and this text is the only
+  // part of a rejection they can act on.
+  const rejectionReason = fulfilment === 'rejected' && typeof cafe?.fulfillmentReason === 'string'
+    ? cafe.fulfillmentReason.trim()
+    : '';
   const body = `<article class="receipt"><div class="receipt__status" data-status="${e(order.status)}"${fulfilment ? ` data-fulfilment="${e(fulfilment)}"` : ''}>${e(status)}</div>
     <p>${e(cafeNote)}</p>
+    ${rejectionReason ? `<p class="receipt-reason" data-rejection-reason>${e(t.rejectionReason)}: ${e(rejectionReason)}</p>` : ''}
     ${params.get('m') === 'failed' ? `<p class="notice notice--error">${e(t.failedPayment)}</p>` : ''}
     <dl>${row(t.reference, toLocaleDigits(String(order.reference || order.id), locale))}${row(t.status, status)}${fulfilmentLabel ? row(t.fulfillment, fulfilmentLabel) : ''}${serviceLabel ? row(t.serviceMode, serviceLabel) : ''}${order.createdAt ? row(ctx.locale === 'fa' ? 'تاریخ' : 'Date', formatDate(order.createdAt, locale)) : ''}${row(t.name, order.buyer?.name)}${row(t.phone, toLocaleDigits(order.buyer?.phone || '', locale))}</dl>
     <div class="receipt-lines">${items.map((item) => `<div class="receipt-line"><div><strong>${e(item.productTitle)}</strong>${item.variationLabel ? `<small>${e(item.variationLabel)}</small>` : ''}<small>${e(t.quantity)}: ${e(formatNumber(item.quantity, locale))} · ${e(money(item.unitPrice))}</small></div><strong>${e(money(item.total ?? item.subtotal))}</strong></div>`).join('')}</div>
